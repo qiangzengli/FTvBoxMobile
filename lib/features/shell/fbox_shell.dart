@@ -16,26 +16,23 @@ class _FBoxShellState extends State<FBoxShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _index, children: const [HomePage(), MyPage()]),
-      bottomNavigationBar: SizedBox(
-        height: 56,
-        child: BottomNavigationBar(
-          currentIndex: _index,
-          onTap: (value) => setState(() => _index = value),
-          items: const [
-            BottomNavigationBarItem(
-              key: Key('bottom-nav-home'),
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: '首页',
-            ),
-            BottomNavigationBarItem(
-              key: Key('bottom-nav-my'),
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: '我的',
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _index,
+        onTap: (value) => setState(() => _index = value),
+        items: const [
+          BottomNavigationBarItem(
+            key: Key('bottom-nav-home'),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            key: Key('bottom-nav-my'),
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: '我的',
+          ),
+        ],
       ),
     );
   }

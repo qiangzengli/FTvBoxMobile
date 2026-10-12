@@ -13,6 +13,7 @@ class _LivePageState extends State<LivePage> {
   bool _playing = true;
   bool _controlsVisible = true;
   bool _channelsVisible = true;
+  String _source = '演示直播源';
 
   static const groups = ['央视频道', '卫视频道', '数字频道'];
   static const channels = [
@@ -40,11 +41,9 @@ class _LivePageState extends State<LivePage> {
                 if (_controlsVisible) ...[
                   _LiveTopBar(
                     channel: _currentChannel,
+                    source: _source,
                     onBack: () => Navigator.pop(context),
-                    onSource: () => _showOptions(
-                      title: '直播源',
-                      options: const ['演示直播源', '备用直播源', '本地播放列表'],
-                    ),
+                    onSource: _selectSource,
                   ),
                   Center(
                     child: IconButton(
@@ -153,6 +152,14 @@ class _LivePageState extends State<LivePage> {
       ),
     );
   }
+
+  Future<void> _selectSource() async {
+    final source = await _showOptions(
+      title: '直播源',
+      options: const ['演示直播源', '备用直播源', '本地播放列表'],
+    );
+    if (source != null && mounted) setState(() => _source = source);
+  }
 }
 
 class _LiveCanvas extends StatelessWidget {
@@ -177,11 +184,13 @@ class _LiveCanvas extends StatelessWidget {
 class _LiveTopBar extends StatelessWidget {
   const _LiveTopBar({
     required this.channel,
+    required this.source,
     required this.onBack,
     required this.onSource,
   });
 
   final String channel;
+  final String source;
   final VoidCallback onBack;
   final VoidCallback onSource;
 
@@ -221,7 +230,7 @@ class _LiveTopBar extends StatelessWidget {
               onPressed: onSource,
               style: TextButton.styleFrom(foregroundColor: Colors.white),
               icon: const Icon(Icons.alt_route, size: 18),
-              label: const Text('线路'),
+              label: Text(source),
             ),
           ],
         ),

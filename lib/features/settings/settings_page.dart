@@ -1,4 +1,5 @@
 import 'package:fbox/app/fbox_store.dart';
+import 'package:fbox/features/library/library_page.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -271,10 +272,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('历史记录'),
             subtitle: const Text('管理或清空观看历史'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showActionSheet(
-              title: '历史记录',
-              actions: const ['管理历史记录', '清空历史记录'],
-            ),
+            onTap: () => _showHistoryActions(store),
           ),
           ListTile(
             key: const Key('settings-clear-cache'),
@@ -348,28 +346,33 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w700),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                title: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-            ...options.map(
-              (option) => ListTile(
-                title: Text(option),
-                trailing: option == selected
-                    ? Icon(
-                        Icons.check_rounded,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                    : null,
-                onTap: () => Navigator.pop(context, option),
+              ...options.map(
+                (option) => ListTile(
+                  title: Text(option),
+                  trailing: option == selected
+                      ? Icon(
+                          Icons.check_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        )
+                      : null,
+                  onTap: () => Navigator.pop(context, option),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -384,26 +387,76 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w700),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                title: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-            ...actions.map(
-              (item) => ListTile(
-                title: Text(item),
-                onTap: () => Navigator.pop(context, item),
+              ...actions.map(
+                (item) => ListTile(
+                  title: Text(item),
+                  onTap: () => Navigator.pop(context, item),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
     if (action != null && mounted) _showMessage('$action（本地演示）');
+  }
+
+  Future<void> _showHistoryActions(FBoxStore store) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(
+                title: Text(
+                  '历史记录',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              ListTile(
+                title: const Text('管理历史记录'),
+                onTap: () => Navigator.pop(context, 'manage'),
+              ),
+              ListTile(
+                title: const Text('清空历史记录'),
+                textColor: Theme.of(context).colorScheme.error,
+                onTap: () => Navigator.pop(context, 'clear'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (action == 'manage') {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const LibraryPage(kind: LibraryKind.history),
+        ),
+      );
+    } else if (action == 'clear') {
+      store.clearHistory();
+      _showMessage('历史记录已清空');
+    }
   }
 
   void _showMessage(String message) {

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:fbox/domain/media_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class PlayerPage extends StatefulWidget {
   const PlayerPage({
@@ -26,12 +29,25 @@ class _PlayerPageState extends State<PlayerPage> {
   double _progress = 0.18;
   double _speed = 1;
   late String _source = widget.source;
+  String _scaleMode = '适应屏幕';
+  String _decodeMode = '硬件解码';
+  String _audioTrack = '默认音轨';
+  String _sleepTimer = '关闭';
+  bool _fullscreen = false;
+
+  @override
+  void dispose() {
+    if (_fullscreen) unawaited(_restoreSystemUi());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
+        top: !_fullscreen,
+        bottom: !_fullscreen,
         child: GestureDetector(
           key: const Key('player-surface'),
           behavior: HitTestBehavior.opaque,
@@ -48,10 +64,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 _TopBar(
                   title: '${widget.item.title} · 第 ${widget.episode} 集',
                   onBack: () => Navigator.pop(context),
-                  onMore: () => _showOptions(
-                    title: '播放设置',
-                    options: const ['画面比例', '解码方式', '音轨', '定时关闭'],
-                  ),
+                  onMore: _showSettingsPanel,
                 ),
                 Center(
                   child: IconButton(
@@ -82,14 +95,10 @@ class _PlayerPageState extends State<PlayerPage> {
                     onSpeed: _showSpeedPicker,
                     onSubtitle: () => setState(() => _subtitle = !_subtitle),
                     onDanmaku: () => setState(() => _danmaku = !_danmaku),
-                    onCast: () => _showOptions(
-                      title: '投屏设备',
-                      options: const ['客厅电视（演示）', '卧室电视（演示）'],
-                    ),
-                    onSettings: () => _showOptions(
-                      title: '播放设置',
-                      options: const ['画面比例', '解码方式', '音轨', '定时关闭'],
-                    ),
+                    fullscreen: _fullscreen,
+                    onFullscreen: _toggleFullscreen,
+                    onCast: _showCastPicker,
+                    onSettings: _showSettingsPanel,
                   ),
                 ),
               ],
@@ -130,6 +139,87 @@ class _PlayerPageState extends State<PlayerPage> {
     );
     if (value == null || !mounted) return;
     setState(() => _speed = double.parse(value.replaceAll('×', '')));
+  }
+
+  Future<void> _showCastPicker() async {
+    final device = await _showOptions(
+      title: '投屏设备',
+      options: const ['客厅电视（演示）', '卧室电视（演示）'],
+    );
+    if (device != null && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('正在连接 $device')));
+    }
+  }
+
+  Future<void> _showSettingsPanel() async {
+    final setting = await _showOptions(
+      title: '播放设置',
+      options: [
+        '画面比例 · $_scaleMode',
+        '解码方式 · $_decodeMode',
+        '音轨 · $_audioTrack',
+        '定时关闭 · $_sleepTimer',
+      ],
+    );
+    if (setting == null || !mounted) return;
+    if (setting.startsWith('画面比例')) {
+      await _selectSetting(
+        title: '画面比例',
+        options: const ['适应屏幕', '铺满屏幕', '原始比例', '16:9'],
+        onSelected: (value) => _scaleMode = value,
+      );
+    } else if (setting.startsWith('解码方式')) {
+      await _selectSetting(
+        title: '解码方式',
+        options: const ['硬件解码', '软件解码'],
+        onSelected: (value) => _decodeMode = value,
+      );
+    } else if (setting.startsWith('音轨')) {
+      await _selectSetting(
+        title: '音轨',
+        options: const ['默认音轨', '国语', '原声'],
+        onSelected: (value) => _audioTrack = value,
+      );
+    } else if (setting.startsWith('定时关闭')) {
+      await _selectSetting(
+        title: '定时关闭',
+        options: const ['关闭', '15 分钟', '30 分钟', '播完本集'],
+        onSelected: (value) => _sleepTimer = value,
+      );
+    }
+  }
+
+  Future<void> _selectSetting({
+    required String title,
+    required List<String> options,
+    required ValueChanged<String> onSelected,
+  }) async {
+    final value = await _showOptions(title: title, options: options);
+    if (value != null && mounted) setState(() => onSelected(value));
+  }
+
+  Future<void> _toggleFullscreen() async {
+    final fullscreen = !_fullscreen;
+    if (fullscreen) {
+      await Future.wait([
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky),
+        SystemChrome.setPreferredOrientations(const [
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]),
+      ]);
+    } else {
+      await _restoreSystemUi();
+    }
+    if (mounted) setState(() => _fullscreen = fullscreen);
+  }
+
+  Future<void> _restoreSystemUi() async {
+    await Future.wait([
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
+      SystemChrome.setPreferredOrientations(const []),
+    ]);
   }
 
   Future<String?> _showOptions({
@@ -281,11 +371,13 @@ class _BottomControls extends StatelessWidget {
     required this.source,
     required this.subtitle,
     required this.danmaku,
+    required this.fullscreen,
     required this.onProgressChanged,
     required this.onSource,
     required this.onSpeed,
     required this.onSubtitle,
     required this.onDanmaku,
+    required this.onFullscreen,
     required this.onCast,
     required this.onSettings,
   });
@@ -295,11 +387,13 @@ class _BottomControls extends StatelessWidget {
   final String source;
   final bool subtitle;
   final bool danmaku;
+  final bool fullscreen;
   final ValueChanged<double> onProgressChanged;
   final VoidCallback onSource;
   final VoidCallback onSpeed;
   final VoidCallback onSubtitle;
   final VoidCallback onDanmaku;
+  final VoidCallback onFullscreen;
   final VoidCallback onCast;
   final VoidCallback onSettings;
 
@@ -328,7 +422,16 @@ class _BottomControls extends StatelessWidget {
                 ),
                 const Text('45:16', style: TextStyle(color: Colors.white70)),
                 const SizedBox(width: 4),
-                const Icon(Icons.fullscreen, color: Colors.white),
+                IconButton(
+                  key: const Key('player-fullscreen'),
+                  tooltip: fullscreen ? '退出全屏' : '全屏',
+                  visualDensity: VisualDensity.compact,
+                  color: Colors.white,
+                  onPressed: onFullscreen,
+                  icon: Icon(
+                    fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                  ),
+                ),
               ],
             ),
             SingleChildScrollView(

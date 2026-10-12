@@ -30,6 +30,30 @@ class FBoxStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removeHistory(Iterable<String> ids) {
+    final previousLength = _history.length;
+    _history.removeWhere(ids.toSet().contains);
+    if (_history.length != previousLength) notifyListeners();
+  }
+
+  void clearHistory() {
+    if (_history.isEmpty) return;
+    _history.clear();
+    notifyListeners();
+  }
+
+  void removeFavorites(Iterable<String> ids) {
+    final previousLength = _favorites.length;
+    _favorites.removeAll(ids);
+    if (_favorites.length != previousLength) notifyListeners();
+  }
+
+  void clearFavorites() {
+    if (_favorites.isEmpty) return;
+    _favorites.clear();
+    notifyListeners();
+  }
+
   void setThemeMode(ThemeMode value) {
     if (_themeMode == value) return;
     _themeMode = value;

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="fbox_splash_background">#FFF7F9FF</color>
+    <color name="fbox_icon_background">#FF567DF4</color>
 </resources>

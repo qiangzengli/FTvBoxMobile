@@ -24,6 +24,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         title: Text(title),
         content: TextFormField(
           initialValue: initialValue,

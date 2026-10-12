@@ -316,22 +316,27 @@ class _DetailPageState extends State<DetailPage> {
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.w700),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                title: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-            ...items.map(
-              (item) => ListTile(
-                title: Text(item),
-                onTap: () => Navigator.pop(context, item),
+              ...items.map(
+                (item) => ListTile(
+                  title: Text(item),
+                  onTap: () => Navigator.pop(context, item),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:fbox/app/fbox_store.dart';
+import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/features/detail/detail_page.dart';
+import 'package:fbox/features/library/library_page.dart';
 import 'package:fbox/features/live/live_page.dart';
 import 'package:fbox/features/player/player_page.dart';
 import 'package:fbox/features/subscription/subscription_page.dart';
@@ -70,6 +72,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('1.50×'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('设置'));
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('画面比例 · 适应屏幕'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('16:9'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+    expect(find.text('画面比例 · 16:9'), findsOneWidget);
+    await tester.tap(find.text('画面比例 · 16:9'));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('player-fullscreen')), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('player-lock')));
     await tester.pump();
     expect(find.byKey(const Key('player-play-toggle')), findsNothing);
@@ -112,7 +131,36 @@ void main() {
     await tester.pump();
 
     expect(find.text('CCTV-1 综合'), findsWidgets);
-    expect(find.text('节目单'), findsNothing);
+    await tester.tap(find.text('演示直播源'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('备用直播源'));
+    await tester.pumpAndSettle();
+    expect(find.text('备用直播源'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('history edit mode removes selected local records', (
+    tester,
+  ) async {
+    final store = FBoxStore();
+    final item = DemoCatalog.items.first;
+    store.recordWatch(item);
+    addTearDown(store.dispose);
+    await tester.pumpWidget(
+      FBoxScope(
+        store: store,
+        child: const MaterialApp(home: LibraryPage(kind: LibraryKind.history)),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('library-edit')));
+    await tester.pump();
+    await tester.tap(find.text(item.title));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('library-delete-selected')));
+    await tester.pump();
+
+    expect(store.historyIds, isEmpty);
+    expect(find.text('暂无观看记录'), findsOneWidget);
   });
 }
