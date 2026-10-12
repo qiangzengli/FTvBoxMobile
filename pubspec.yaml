@@ -34,6 +34,18 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  file_picker: ^8.3.7
+  http: ^1.5.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  # Keep the non-native-assets platform implementations so Android builds do
+  # not require an NDK just for document-directory lookup.
+  path_provider_android: 2.2.23
+  path_provider_foundation: 2.4.4
+  shared_preferences: ^2.5.3
+  video_player: ^2.10.0
+  webview_flutter: ^4.13.0
+  xml: ^6.6.1
 
 dev_dependencies:
   flutter_test:

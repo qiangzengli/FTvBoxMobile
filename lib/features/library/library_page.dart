@@ -1,5 +1,4 @@
 import 'package:fbox/app/fbox_store.dart';
-import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/features/detail/detail_page.dart';
 import 'package:fbox/widgets/media_poster_card.dart';
@@ -26,7 +25,7 @@ class _LibraryPageState extends State<LibraryPage> {
     final ids = widget.kind == LibraryKind.history
         ? store.historyIds
         : store.favoriteIds;
-    final items = ids.map(DemoCatalog.byId).toList();
+    final items = store.itemsForIds(ids);
     final title = widget.kind == LibraryKind.history ? '观看历史' : '收藏';
     return Scaffold(
       appBar: AppBar(
@@ -56,14 +55,14 @@ class _LibraryPageState extends State<LibraryPage> {
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
-                final selected = _selected.contains(item.id);
+                final selected = _selected.contains(item.storageId);
                 return Stack(
                   fit: StackFit.expand,
                   children: [
                     MediaPosterCard(
                       item: item,
                       onTap: () => _editing
-                          ? _toggleSelected(item.id)
+                          ? _toggleSelected(item.storageId)
                           : _openDetail(context, item),
                     ),
                     if (_editing)

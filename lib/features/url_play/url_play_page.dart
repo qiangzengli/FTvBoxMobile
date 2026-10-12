@@ -1,3 +1,6 @@
+import 'package:fbox/domain/media_item.dart';
+import 'package:fbox/domain/source_models.dart';
+import 'package:fbox/features/player/player_page.dart';
 import 'package:flutter/material.dart';
 
 class UrlPlayPage extends StatefulWidget {
@@ -17,18 +20,45 @@ class _UrlPlayPageState extends State<UrlPlayPage> {
   }
 
   void _submit() {
-    if (_controller.text.trim().isEmpty) return;
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('播放链接'),
-        content: const Text('演示版本已识别该链接。接入播放内核后即可直接播放。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
-          ),
-        ],
+    final value = _controller.text.trim();
+    final uri = Uri.tryParse(value);
+    if (uri == null ||
+        !{'http', 'https', 'file', 'rtsp', 'rtmp'}.contains(uri.scheme)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入有效的 HTTP、HTTPS、文件或直播地址')),
+      );
+      return;
+    }
+    final title = uri.pathSegments.isEmpty || uri.pathSegments.last.isEmpty
+        ? uri.host
+        : Uri.decodeComponent(uri.pathSegments.last);
+    final item = MediaItem(
+      id: 'url-${value.hashCode}',
+      title: title,
+      note: '链接播放',
+      year: '',
+      category: '链接',
+      rating: '',
+      description: value,
+      director: '',
+      actors: '',
+      episodes: 1,
+      color: 0xFF48627A,
+      playLines: [
+        MediaPlayLine(
+          name: '原始地址',
+          episodes: [MediaEpisode(name: '链接', url: value)],
+        ),
+      ],
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PlayerPage(
+          item: item,
+          episodeName: '链接',
+          source: '原始地址',
+          playback: PlaybackRequest(url: value),
+        ),
       ),
     );
   }

@@ -35,13 +35,15 @@ class MediaPosterCard extends StatelessWidget {
                 ),
               ),
             ),
-            Center(
-              child: Icon(
-                Icons.movie_filter_outlined,
-                color: Colors.white.withValues(alpha: 0.45),
-                size: 38,
-              ),
-            ),
+            if (item.posterUrl.isNotEmpty)
+              Image.network(
+                item.posterUrl,
+                fit: BoxFit.cover,
+                headers: item.headers,
+                errorBuilder: (_, _, _) => _PosterFallback(color: color),
+              )
+            else
+              _PosterFallback(color: color),
             Align(
               alignment: Alignment.topLeft,
               child: Container(
@@ -87,6 +89,23 @@ class MediaPosterCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PosterFallback extends StatelessWidget {
+  const _PosterFallback({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Icon(
+        Icons.movie_filter_outlined,
+        color: Colors.white.withValues(alpha: 0.45),
+        size: 38,
       ),
     );
   }

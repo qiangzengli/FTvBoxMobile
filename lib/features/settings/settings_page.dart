@@ -1,5 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:fbox/app/fbox_store.dart';
 import 'package:fbox/features/library/library_page.dart';
+import 'package:fbox/services/background_image_service.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -12,11 +18,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _autoLoad = true;
   bool _rememberProgress = true;
-  bool _hardwareDecode = true;
   bool _glass = false;
   bool _backgroundBlur = false;
   bool _privateBrowsing = false;
-  bool _adFilter = true;
   bool _longPressSpeed = true;
   bool _backgroundPlay = false;
   double _backgroundAlpha = 1;
@@ -26,11 +30,38 @@ class _SettingsPageState extends State<SettingsPage> {
   String _homeSource = 'FBox 演示订阅';
   String _liveSource = '演示直播源';
   String _dns = '腾讯 DoH';
-  String _player = '系统播放器';
-  String _renderMode = 'SurfaceView';
   String _scaleMode = '适应屏幕';
-  String _ijkCache = '关闭';
   double _cacheSize = 12.6;
+  bool _loadedSettings = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loadedSettings) return;
+    _loadedSettings = true;
+    final store = FBoxScope.of(context);
+    _autoLoad = store.settings['autoLoad'] != false;
+    _rememberProgress = store.rememberProgress;
+    _privateBrowsing = store.privateBrowsing;
+    _homeLayout = store.settings['homeLayout']?.toString() ?? _homeLayout;
+    _aggregateMode =
+        store.settings['aggregateMode']?.toString() ?? _aggregateMode;
+    _background = store.settings['background']?.toString() ?? _background;
+    _backgroundAlpha =
+        (store.settings['backgroundAlpha'] as num?)?.toDouble() ??
+        _backgroundAlpha;
+    _glass = store.settings['glass'] == true;
+    _backgroundBlur = store.settings['backgroundBlur'] == true;
+    _homeSource = store.currentSource?.name ?? 'FBox 演示订阅';
+    final preferredLiveUrl = store.settings['liveSourceUrl']?.toString() ?? '';
+    for (final source in store.liveSources) {
+      if (source.url == preferredLiveUrl) _liveSource = source.name;
+    }
+    _dns = store.dnsMode;
+    _longPressSpeed = store.settings['longPressSpeed'] != false;
+    _backgroundPlay = store.settings['backgroundPlay'] == true;
+    _scaleMode = store.settings['scaleMode']?.toString() ?? _scaleMode;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +108,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: '主页内容',
               options: const ['3 列 · 海报模式', '2 列 · 海报模式', '列表模式'],
               selected: _homeLayout,
-              onSelected: (value) => setState(() => _homeLayout = value),
+              onSelected: (value) {
+                setState(() => _homeLayout = value);
+                store.setSetting('homeLayout', value);
+              },
             ),
           ),
           ListTile(
@@ -89,7 +123,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: '聚合模式',
               options: const ['多源聚合', '当前站源', '关闭聚合'],
               selected: _aggregateMode,
-              onSelected: (value) => setState(() => _aggregateMode = value),
+              onSelected: (value) {
+                setState(() => _aggregateMode = value);
+                store.setSetting('aggregateMode', value);
+              },
             ),
           ),
           ListTile(
@@ -101,7 +138,7 @@ class _SettingsPageState extends State<SettingsPage> {
               title: '背景图片',
               options: const ['默认背景', '纯色背景', '相册选择'],
               selected: _background,
-              onSelected: (value) => setState(() => _background = value),
+              onSelected: (value) => _selectBackground(store, value),
             ),
           ),
           ListTile(
@@ -109,20 +146,29 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('背景图片透明度'),
             subtitle: Slider(
               value: _backgroundAlpha,
-              onChanged: (value) => setState(() => _backgroundAlpha = value),
+              onChanged: (value) {
+                setState(() => _backgroundAlpha = value);
+                store.setSetting('backgroundAlpha', value);
+              },
             ),
           ),
           SwitchListTile(
             secondary: const Icon(Icons.blur_on_rounded),
             title: const Text('液态玻璃'),
             value: _glass,
-            onChanged: (value) => setState(() => _glass = value),
+            onChanged: (value) {
+              setState(() => _glass = value);
+              store.setSetting('glass', value);
+            },
           ),
           SwitchListTile(
             secondary: const Icon(Icons.blur_circular_rounded),
             title: const Text('应用背景模糊'),
             value: _backgroundBlur,
-            onChanged: (value) => setState(() => _backgroundBlur = value),
+            onChanged: (value) {
+              setState(() => _backgroundBlur = value);
+              store.setSetting('backgroundBlur', value);
+            },
           ),
           const Divider(height: 1),
           const _SectionTitle('通用'),
@@ -130,31 +176,24 @@ class _SettingsPageState extends State<SettingsPage> {
             secondary: const Icon(Icons.refresh_rounded),
             title: const Text('启动时自动加载上次配置'),
             value: _autoLoad,
-            onChanged: (value) => setState(() => _autoLoad = value),
+            onChanged: (value) {
+              setState(() => _autoLoad = value);
+              store.setSetting('autoLoad', value);
+            },
           ),
           ListTile(
             leading: const Icon(Icons.dns_outlined),
             title: const Text('首页站源'),
             subtitle: Text(_homeSource),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _selectOption(
-              title: '首页站源',
-              options: const ['FBox 演示订阅', '上次使用', '每次询问'],
-              selected: _homeSource,
-              onSelected: (value) => setState(() => _homeSource = value),
-            ),
+            onTap: () => _selectHomeSource(store),
           ),
           ListTile(
             leading: const Icon(Icons.live_tv_outlined),
             title: const Text('直播源'),
             subtitle: Text(_liveSource),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _selectOption(
-              title: '直播源',
-              options: const ['演示直播源', '订阅直播源', '本地播放列表'],
-              selected: _liveSource,
-              onSelected: (value) => setState(() => _liveSource = value),
-            ),
+            onTap: () => _selectLiveSource(store),
           ),
           ListTile(
             leading: const Icon(Icons.security_outlined),
@@ -165,71 +204,97 @@ class _SettingsPageState extends State<SettingsPage> {
               title: '安全 DNS',
               options: const ['腾讯 DoH', '阿里 DoH', '系统 DNS', '关闭'],
               selected: _dns,
-              onSelected: (value) => setState(() => _dns = value),
+              onSelected: (value) {
+                setState(() => _dns = value);
+                store.setSetting('dns', value);
+                store.setSetting('dohEndpoint', switch (value) {
+                  '腾讯 DoH' => 'https://doh.pub/dns-query',
+                  '阿里 DoH' => 'https://dns.alidns.com/resolve',
+                  _ => '',
+                });
+              },
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lan_outlined),
+            title: const Text('网络代理'),
+            subtitle: Text(
+              store.proxy.isEmpty
+                  ? '未设置 · 用于订阅、接口、解析与下载'
+                  : '${store.proxy} · 不接管系统播放器/WebView',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _editProxy(store),
+          ),
+          ListTile(
+            leading: const Icon(Icons.network_check_rounded),
+            title: const Text('DNS 网络诊断'),
+            subtitle: const Text('解析 api.github.com 并验证当前 DoH'),
+            trailing: const Icon(Icons.play_arrow_rounded),
+            onTap: () => _testDns(store),
           ),
           SwitchListTile(
             secondary: const Icon(Icons.visibility_off_outlined),
             title: const Text('无痕浏览'),
             value: _privateBrowsing,
-            onChanged: (value) => setState(() => _privateBrowsing = value),
+            onChanged: (value) {
+              setState(() => _privateBrowsing = value);
+              store.setSetting('privateBrowsing', value);
+            },
           ),
           const Divider(height: 1),
           const _SectionTitle('播放器'),
           ListTile(
             leading: const Icon(Icons.play_circle_outline_rounded),
             title: const Text('播放器'),
-            subtitle: Text(_player),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _selectOption(
-              title: '播放器',
-              options: const ['系统播放器', 'IJK 播放器', '外部播放器'],
-              selected: _player,
-              onSelected: (value) => setState(() => _player = value),
-            ),
+            subtitle: const Text('系统播放器（Android / iOS）'),
+            trailing: const Icon(Icons.info_outline_rounded),
+            onTap: () => _showMessage('当前跨平台版本仅支持系统播放器'),
           ),
-          SwitchListTile(
-            secondary: const Icon(Icons.memory_rounded),
-            title: const Text('IJK 解码方式'),
-            subtitle: Text(_hardwareDecode ? '硬件解码' : '软件解码'),
-            value: _hardwareDecode,
-            onChanged: (value) => setState(() => _hardwareDecode = value),
+          const ListTile(
+            leading: Icon(Icons.memory_rounded),
+            title: Text('IJK 解码方式'),
+            subtitle: Text('当前跨平台版本不支持，解码由系统播放器管理'),
+            enabled: false,
           ),
-          SwitchListTile(
-            secondary: const Icon(Icons.filter_alt_outlined),
-            title: const Text('广告过滤'),
-            value: _adFilter,
-            onChanged: (value) => setState(() => _adFilter = value),
+          const ListTile(
+            leading: Icon(Icons.filter_alt_outlined),
+            title: Text('广告过滤'),
+            subtitle: Text('当前跨平台版本不提供播放器级广告过滤'),
+            enabled: false,
           ),
           SwitchListTile(
             secondary: const Icon(Icons.fast_forward_rounded),
             title: const Text('长按倍速'),
             value: _longPressSpeed,
-            onChanged: (value) => setState(() => _longPressSpeed = value),
+            onChanged: (value) {
+              setState(() => _longPressSpeed = value);
+              store.setSetting('longPressSpeed', value);
+            },
           ),
           SwitchListTile(
             secondary: const Icon(Icons.picture_in_picture_alt_outlined),
             title: const Text('后台播放'),
             value: _backgroundPlay,
-            onChanged: (value) => setState(() => _backgroundPlay = value),
+            onChanged: (value) {
+              setState(() => _backgroundPlay = value);
+              store.setSetting('backgroundPlay', value);
+            },
           ),
           SwitchListTile(
             secondary: const Icon(Icons.timelapse_rounded),
             title: const Text('记忆播放进度'),
             value: _rememberProgress,
-            onChanged: (value) => setState(() => _rememberProgress = value),
+            onChanged: (value) {
+              setState(() => _rememberProgress = value);
+              store.setSetting('rememberProgress', value);
+            },
           ),
-          ListTile(
-            leading: const Icon(Icons.speed_rounded),
-            title: const Text('渲染方式'),
-            subtitle: Text(_renderMode),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _selectOption(
-              title: '渲染方式',
-              options: const ['SurfaceView', 'TextureView'],
-              selected: _renderMode,
-              onSelected: (value) => setState(() => _renderMode = value),
-            ),
+          const ListTile(
+            leading: Icon(Icons.speed_rounded),
+            title: Text('渲染方式'),
+            subtitle: Text('由 Android / iOS 系统播放器自动选择'),
+            enabled: false,
           ),
           ListTile(
             leading: const Icon(Icons.aspect_ratio_rounded),
@@ -240,20 +305,17 @@ class _SettingsPageState extends State<SettingsPage> {
               title: '画面缩放',
               options: const ['适应屏幕', '铺满屏幕', '原始比例', '16:9'],
               selected: _scaleMode,
-              onSelected: (value) => setState(() => _scaleMode = value),
+              onSelected: (value) {
+                setState(() => _scaleMode = value);
+                store.setSetting('scaleMode', value);
+              },
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.cached_rounded),
-            title: const Text('IJK 缓存'),
-            subtitle: Text(_ijkCache),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _selectOption(
-              title: 'IJK 缓存',
-              options: const ['关闭', '100 MB', '300 MB', '1 GB'],
-              selected: _ijkCache,
-              onSelected: (value) => setState(() => _ijkCache = value),
-            ),
+          const ListTile(
+            leading: Icon(Icons.cached_rounded),
+            title: Text('IJK 缓存'),
+            subtitle: Text('当前跨平台版本不支持'),
+            enabled: false,
           ),
           const Divider(height: 1),
           const _SectionTitle('数据'),
@@ -265,6 +327,7 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: () => _showActionSheet(
               title: '数据备份还原',
               actions: const ['创建本地备份', '从本地备份还原'],
+              onSelected: (action) => _handleBackup(store, action),
             ),
           ),
           ListTile(
@@ -280,7 +343,13 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('清理缓存'),
             subtitle: Text('${_cacheSize.toStringAsFixed(1)} MB'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
+            onTap: () async {
+              try {
+                await FilePicker.platform.clearTemporaryFiles();
+              } on Object {
+                // Some platforms do not expose a temporary picker cache.
+              }
+              if (!mounted) return;
               setState(() => _cacheSize = 0);
               _showMessage('缓存已清理');
             },
@@ -336,11 +405,61 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<void> _selectHomeSource(FBoxStore store) => _selectOption(
+    title: '首页站源',
+    options: ['FBox 演示订阅', ...store.sources.map((source) => source.name)],
+    selected: _homeSource,
+    onSelected: (value) async {
+      try {
+        final key = value == 'FBox 演示订阅'
+            ? 'demo'
+            : store.sources
+                  .firstWhere((source) => source.name == value)
+                  .identity;
+        await store.selectSource(key);
+        store.setSetting('homeSourceKey', key);
+        if (mounted) setState(() => _homeSource = value);
+      } catch (error) {
+        if (mounted) _showMessage('切换首页站源失败：$error');
+      }
+    },
+  );
+
+  Future<void> _selectBackground(FBoxStore store, String value) async {
+    if (value == '相册选择') {
+      final result = await FilePicker.platform.pickFiles(type: FileType.image);
+      final path = result?.files.single.path;
+      if (path == null || path.isEmpty) return;
+      try {
+        final imported = await const BackgroundImageService().importImage(path);
+        store.setSetting('backgroundImagePath', imported);
+      } catch (error) {
+        if (mounted) _showMessage('保存背景图片失败：$error');
+        return;
+      }
+    }
+    store.setSetting('background', value);
+    if (mounted) setState(() => _background = value);
+  }
+
+  Future<void> _selectLiveSource(FBoxStore store) => _selectOption(
+    title: '直播源',
+    options: ['演示直播源', ...store.liveSources.map((source) => source.name)],
+    selected: _liveSource,
+    onSelected: (value) {
+      final url = value == '演示直播源'
+          ? demoLiveSourceSetting
+          : store.liveSources.firstWhere((source) => source.name == value).url;
+      store.setSetting('liveSourceUrl', url);
+      setState(() => _liveSource = value);
+    },
+  );
+
   Future<void> _selectOption({
     required String title,
     required List<String> options,
     required String selected,
-    required ValueChanged<String> onSelected,
+    required FutureOr<void> Function(String) onSelected,
   }) async {
     final value = await showModalBottomSheet<String>(
       context: context,
@@ -376,12 +495,13 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
-    if (value != null && mounted) onSelected(value);
+    if (value != null && mounted) await onSelected(value);
   }
 
   Future<void> _showActionSheet({
     required String title,
     required List<String> actions,
+    ValueChanged<String>? onSelected,
   }) async {
     final action = await showModalBottomSheet<String>(
       context: context,
@@ -411,7 +531,87 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
-    if (action != null && mounted) _showMessage('$action（本地演示）');
+    if (action != null && mounted) onSelected?.call(action);
+  }
+
+  Future<void> _editProxy(FBoxStore store) async {
+    final controller = TextEditingController(text: store.proxy);
+    final value = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('网络代理'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'http://127.0.0.1:7890',
+            helperText: '留空表示直连，支持带用户名密码的 HTTP 代理',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (value != null) store.setSetting('proxy', value);
+  }
+
+  Future<void> _testDns(FBoxStore store) async {
+    _showMessage('正在执行 DNS 解析…');
+    try {
+      final endpoint = store.settings['dohEndpoint']?.toString() ?? '';
+      final addresses = await store.network.resolveHost(
+        'api.github.com',
+        dohEndpoint: endpoint,
+      );
+      if (mounted) {
+        _showMessage(
+          '解析成功：${addresses.map((address) => address.address).join(', ')}',
+        );
+      }
+    } catch (error) {
+      if (mounted) _showMessage('DNS 诊断失败：$error');
+    }
+  }
+
+  Future<void> _handleBackup(FBoxStore store, String action) async {
+    try {
+      if (action == '创建本地备份') {
+        final bytes = Uint8List.fromList(utf8.encode(store.exportBackupText()));
+        final name =
+            'fbox-backup-${DateTime.now().toIso8601String().substring(0, 10)}.json';
+        final saved = await FilePicker.platform.saveFile(
+          dialogTitle: '保存 FBox 备份',
+          fileName: name,
+          type: FileType.custom,
+          allowedExtensions: const ['json'],
+          bytes: bytes,
+        );
+        if (mounted && saved != null) _showMessage('备份已保存');
+      } else {
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: const ['json'],
+          withData: true,
+        );
+        if (result == null) return;
+        final file = result.files.single;
+        final bytes = file.bytes;
+        if (bytes == null) throw const FormatException('无法读取备份文件');
+        await store.importBackupText(utf8.decode(bytes));
+        if (mounted) _showMessage('备份已恢复');
+      }
+    } catch (error) {
+      if (mounted) _showMessage('备份操作失败：$error');
+    }
   }
 
   Future<void> _showHistoryActions(FBoxStore store) async {

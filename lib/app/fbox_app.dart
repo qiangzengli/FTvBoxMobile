@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fbox/app/fbox_theme.dart';
 import 'package:fbox/app/fbox_store.dart';
 import 'package:fbox/features/splash/splash_page.dart';
@@ -12,6 +14,12 @@ class FBoxApp extends StatefulWidget {
 
 class _FBoxAppState extends State<FBoxApp> {
   final _store = FBoxStore();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_store.initialize());
+  }
 
   @override
   void dispose() {
