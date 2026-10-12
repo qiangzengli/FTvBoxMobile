@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class LocalVideoPage extends StatelessWidget {
@@ -5,22 +6,30 @@ class LocalVideoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final storageLabel = isIOS ? '在我的 iPhone' : '内部存储';
+    final storagePath = isIOS ? '文件 · FBox' : '/storage/emulated/0';
+    final folders = isIOS
+        ? const [('FBox', '2 个视频'), ('下载项', '5 个视频')]
+        : const [
+            ('Download', '2 个视频'),
+            ('Movies', '5 个视频'),
+            ('DCIM', '12 个视频'),
+          ];
     return Scaffold(
       appBar: AppBar(title: const Text('本地视频')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
         children: [
-          const ListTile(
-            leading: Icon(Icons.phone_android_rounded),
-            title: Text('内部存储'),
-            subtitle: Text('/storage/emulated/0'),
+          ListTile(
+            leading: Icon(
+              isIOS ? Icons.phone_iphone_rounded : Icons.phone_android_rounded,
+            ),
+            title: Text(storageLabel),
+            subtitle: Text(storagePath),
           ),
           const Divider(),
-          ...const [
-            ('Download', '2 个视频'),
-            ('Movies', '5 个视频'),
-            ('DCIM', '12 个视频'),
-          ].map(
+          ...folders.map(
             (folder) => ListTile(
               leading: const Icon(
                 Icons.folder_rounded,

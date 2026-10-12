@@ -1,4 +1,3 @@
-import 'package:fbox/app/fbox_theme.dart';
 import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/features/detail/detail_page.dart';
@@ -155,8 +154,8 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           trailing: Text(
                             item.rating,
-                            style: const TextStyle(
-                              color: FBoxTheme.primary,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

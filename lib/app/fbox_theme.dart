@@ -4,7 +4,8 @@ abstract final class FBoxTheme {
   static const primary = Color(0xFF567DF4);
   static const accent = Color(0xFF3E4FB1);
 
-  static ThemeData get light => _theme(
+  static ThemeData light([Color primaryColor = primary]) => _theme(
+    primaryColor: primaryColor,
     brightness: Brightness.light,
     page: Colors.white,
     surface: const Color(0xFFF7F7F7),
@@ -12,7 +13,8 @@ abstract final class FBoxTheme {
     secondary: const Color(0xFF787878),
   );
 
-  static ThemeData get dark => _theme(
+  static ThemeData dark([Color primaryColor = primary]) => _theme(
+    primaryColor: primaryColor,
     brightness: Brightness.dark,
     page: const Color(0xFF121212),
     surface: const Color(0xFF212121),
@@ -21,6 +23,7 @@ abstract final class FBoxTheme {
   );
 
   static ThemeData _theme({
+    required Color primaryColor,
     required Brightness brightness,
     required Color page,
     required Color surface,
@@ -28,9 +31,9 @@ abstract final class FBoxTheme {
     required Color secondary,
   }) {
     final scheme = ColorScheme.fromSeed(
-      seedColor: primary,
+      seedColor: primaryColor,
       brightness: brightness,
-      primary: primary,
+      primary: primaryColor,
       surface: page,
       onSurface: foreground,
     );
@@ -38,7 +41,7 @@ abstract final class FBoxTheme {
       useMaterial3: false,
       brightness: brightness,
       colorScheme: scheme,
-      primaryColor: primary,
+      primaryColor: primaryColor,
       scaffoldBackgroundColor: page,
       fontFamilyFallback: const ['PingFang SC', 'Noto Sans CJK SC'],
       splashFactory: InkRipple.splashFactory,
@@ -52,7 +55,7 @@ abstract final class FBoxTheme {
       dividerColor: secondary.withValues(alpha: 0.15),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: page,
-        selectedItemColor: primary,
+        selectedItemColor: primaryColor,
         unselectedItemColor: const Color(0xFF777373),
         elevation: 8,
         selectedLabelStyle: const TextStyle(fontSize: 12),

@@ -7,6 +7,9 @@ class FBoxStore extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   ThemeMode _themeMode = ThemeMode.system;
 
+  Color get themeColor => _themeColor;
+  Color _themeColor = const Color(0xFF567DF4);
+
   UnmodifiableSetView<String> get favoriteIds =>
       UnmodifiableSetView(_favorites);
   final Set<String> _favorites = {};
@@ -30,6 +33,12 @@ class FBoxStore extends ChangeNotifier {
   void setThemeMode(ThemeMode value) {
     if (_themeMode == value) return;
     _themeMode = value;
+    notifyListeners();
+  }
+
+  void setThemeColor(Color value) {
+    if (_themeColor == value) return;
+    _themeColor = value;
     notifyListeners();
   }
 }

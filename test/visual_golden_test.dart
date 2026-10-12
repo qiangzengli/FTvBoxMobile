@@ -1,5 +1,4 @@
 import 'package:fbox/app/fbox_app.dart';
-import 'package:fbox/features/detail/detail_page.dart';
 import 'package:fbox/features/shell/fbox_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,7 +47,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await expectLater(
-      find.byType(DetailPage),
+      find.byKey(const Key('detail-page')),
       matchesGoldenFile('goldens/detail.png'),
     );
   });

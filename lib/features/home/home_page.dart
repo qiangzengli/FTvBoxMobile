@@ -1,4 +1,3 @@
-import 'package:fbox/app/fbox_theme.dart';
 import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/features/detail/detail_page.dart';
@@ -183,7 +182,10 @@ class _HomePageState extends State<HomePage> {
                 (source) => ListTile(
                   title: Text(source),
                   trailing: source == _source
-                      ? const Icon(Icons.check, color: FBoxTheme.primary)
+                      ? Icon(
+                          Icons.check,
+                          color: Theme.of(context).colorScheme.primary,
+                        )
                       : null,
                   onTap: () => Navigator.pop(context, source),
                 ),
@@ -239,7 +241,7 @@ class _CategoryStrip extends StatelessWidget {
                   label,
                   style: TextStyle(
                     color: active
-                        ? FBoxTheme.primary
+                        ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).colorScheme.onSurface,
                     fontSize: active ? 16 : 14,
                     fontWeight: active ? FontWeight.w600 : FontWeight.normal,
@@ -251,7 +253,7 @@ class _CategoryStrip extends StatelessWidget {
                   width: active ? 18 : 0,
                   height: 2,
                   decoration: BoxDecoration(
-                    color: FBoxTheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(1),
                   ),
                 ),

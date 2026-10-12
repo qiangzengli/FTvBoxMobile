@@ -1,4 +1,3 @@
-import 'package:fbox/app/fbox_theme.dart';
 import 'package:flutter/material.dart';
 
 class UrlPlayPage extends StatefulWidget {
@@ -77,7 +76,7 @@ class _UrlPlayPageState extends State<UrlPlayPage> {
                 icon: const Icon(Icons.play_arrow_rounded),
                 label: const Text('播放'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: FBoxTheme.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   minimumSize: const Size.fromHeight(46),
                 ),

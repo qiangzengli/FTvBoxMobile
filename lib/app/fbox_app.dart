@@ -28,8 +28,8 @@ class _FBoxAppState extends State<FBoxApp> {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'FBox',
-          theme: FBoxTheme.light,
-          darkTheme: FBoxTheme.dark,
+          theme: FBoxTheme.light(_store.themeColor),
+          darkTheme: FBoxTheme.dark(_store.themeColor),
           themeMode: _store.themeMode,
           home: const LaunchGate(),
         ),
