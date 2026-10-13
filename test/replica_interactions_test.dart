@@ -238,6 +238,37 @@ void main() {
     expect(find.text('备用线路'), findsOneWidget);
   });
 
+  testWidgets('detail handles empty play lines safely without clamp error', (
+    tester,
+  ) async {
+    const emptyItem = MediaItem(
+      id: 'empty-series',
+      title: '空线路影视',
+      note: '无资源',
+      year: '2026',
+      category: '电影',
+      rating: '',
+      description: '没有任何线路的影片',
+      director: '',
+      actors: '',
+      episodes: 0,
+      color: 0xFF607D8B,
+      playLines: [],
+    );
+
+    final store = FBoxStore();
+    addTearDown(store.dispose);
+    await tester.pumpWidget(
+      FBoxScope(
+        store: store,
+        child: const MaterialApp(home: DetailPage(item: emptyItem)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('空线路影视'), findsOneWidget);
+  });
+
   testWidgets('player exposes speed, subtitle, danmaku and lock controls', (
     tester,
   ) async {

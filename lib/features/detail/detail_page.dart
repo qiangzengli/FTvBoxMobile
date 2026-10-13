@@ -42,8 +42,16 @@ class _DetailPageState extends State<DetailPage> {
     ];
   }
 
-  MediaPlayLine get _selectedLine =>
-      _lines[_sourceIndex.clamp(0, _lines.length - 1)];
+  static const _fallbackLine = MediaPlayLine(
+    name: '默认线路',
+    episodes: [MediaEpisode(name: '1', url: '')],
+  );
+
+  MediaPlayLine get _selectedLine {
+    final lines = _lines;
+    if (lines.isEmpty) return _fallbackLine;
+    return lines[_sourceIndex.clamp(0, lines.length - 1)];
+  }
 
   MediaEpisode get _selectedEpisode {
     final episodes = _selectedLine.episodes;
