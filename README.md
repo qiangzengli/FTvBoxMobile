@@ -4,7 +4,7 @@ FBox 是一个同时支持 Android 与 iOS 的 Flutter 媒体聚合应用。当�
 
 ## 运行
 
-环境要求：Flutter 3.47.1 或兼容的稳定版本、Dart 3.13 及可用的 Android SDK / Xcode。
+环境要求：Flutter 3.35.x 或更高兼容稳定版本、Dart 3.9+ 及可用的 Android SDK / Xcode。
 
 ```bash
 flutter pub get
