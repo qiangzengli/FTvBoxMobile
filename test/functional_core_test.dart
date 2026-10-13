@@ -64,6 +64,25 @@ void main() {
     expect(groups.single.channels.single.urls, hasLength(2));
   });
 
+  test('parses TXT channels with multiple URLs separated by hash', () {
+    const playlist = '''
+      央视频道,#genre#
+      CCTV-1,https://one.test/live.m3u8#https://two.test/live.m3u8#https://three.test/live.m3u8
+      CCTV-2,https://cctv2.test/live.m3u8
+    ''';
+
+    final groups = const LivePlaylistParser().parse(playlist);
+
+    expect(groups.single.name, '央视频道');
+    expect(groups.single.channels, hasLength(2));
+    expect(groups.single.channels.first.name, 'CCTV-1');
+    expect(groups.single.channels.first.urls, [
+      'https://one.test/live.m3u8',
+      'https://two.test/live.m3u8',
+      'https://three.test/live.m3u8',
+    ]);
+  });
+
   test('loads real DIYP EPG data with channel and date placeholders', () async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     addTearDown(server.close);

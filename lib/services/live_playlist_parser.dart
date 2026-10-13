@@ -80,10 +80,17 @@ class LivePlaylistParser {
       }
       final separator = line.indexOf(',');
       if (separator <= 0 || separator >= line.length - 1) continue;
+      final urls = line
+          .substring(separator + 1)
+          .split('#')
+          .map((url) => url.trim())
+          .where((url) => url.isNotEmpty)
+          .toList();
+      if (urls.isEmpty) continue;
       result.add(
         LiveChannel(
           name: line.substring(0, separator).trim(),
-          urls: [line.substring(separator + 1).trim()],
+          urls: urls,
           group: group,
           headers: headers,
         ),
