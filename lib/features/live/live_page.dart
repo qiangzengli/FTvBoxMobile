@@ -440,7 +440,6 @@ class _LivePageState extends State<LivePage> {
         await controller.dispose();
         return;
       }
-      setState(() => _controller = controller);
       try {
         await controller.initialize();
         if (!mounted || generation != _playGeneration) {
@@ -462,11 +461,6 @@ class _LivePageState extends State<LivePage> {
       } catch (error) {
         lastError = error;
         await controller.dispose();
-        if (mounted &&
-            generation == _playGeneration &&
-            identical(_controller, controller)) {
-          setState(() => _controller = null);
-        }
       }
     }
     if (mounted && generation == _playGeneration) {
