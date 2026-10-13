@@ -48,6 +48,15 @@ void main() {
     expect(config.liveSources.single.headers['User-Agent'], 'FBox');
   });
 
+  test('ParseSource appends cat_ext even when url does not contain query parameters', () {
+    const parser = ParseSource(
+      name: '解析',
+      url: 'https://parse.test/api',
+      rawExt: 'token=123',
+    );
+    expect(parser.requestUrl, startsWith('https://parse.test/api?cat_ext='));
+  });
+
   test('parses and merges M3U channels by group and name', () {
     const playlist = '''
       #EXTM3U

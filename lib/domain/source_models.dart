@@ -113,9 +113,12 @@ class ParseSource {
   final String rawExt;
 
   String get requestUrl {
-    if (rawExt.isEmpty || !url.contains('?')) return url;
-    final separator = url.indexOf('?') + 1;
+    if (rawExt.isEmpty) return url;
     final encoded = base64Url.encode(utf8.encode(rawExt));
+    if (!url.contains('?')) {
+      return '$url?cat_ext=$encoded';
+    }
+    final separator = url.indexOf('?') + 1;
     return '${url.substring(0, separator)}cat_ext=$encoded&'
         '${url.substring(separator)}';
   }
