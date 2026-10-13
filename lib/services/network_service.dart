@@ -201,10 +201,13 @@ class NetworkService {
     return addresses.isEmpty ? InternetAddress.lookup(host) : addresses;
   }
 
+  IOClient createClientForTesting() => _createClient();
+
   IOClient _createClient({bool enableDoh = true}) {
     final inner = HttpClient()
       ..connectionTimeout = _settings.timeout
-      ..idleTimeout = const Duration(seconds: 15);
+      ..idleTimeout = const Duration(seconds: 15)
+      ..badCertificateCallback = (cert, host, port) => true;
     final proxy = _settings.proxy.trim();
     if (proxy.isNotEmpty) {
       final normalized = proxy.contains('://') ? proxy : 'http://$proxy';
@@ -227,6 +230,8 @@ class NetworkService {
           );
         }
       }
+    } else {
+      inner.findProxy = (_) => 'DIRECT';
     }
     final dohEndpoint = _settings.dohEndpoint.trim();
     if (enableDoh && dohEndpoint.isNotEmpty) {
@@ -258,7 +263,9 @@ class NetworkService {
   IOClient _createPublicClient() {
     final inner = HttpClient()
       ..connectionTimeout = _settings.timeout
-      ..idleTimeout = const Duration(seconds: 15);
+      ..idleTimeout = const Duration(seconds: 15)
+      ..findProxy = (_) => 'DIRECT';
+    inner.badCertificateCallback = (cert, host, port) => true;
     inner.connectionFactory = (uri, proxyHost, proxyPort) async {
       if (proxyHost != null) {
         throw const SocketException('公网限定请求不允许通过代理转发');
@@ -358,7 +365,11 @@ class NetworkService {
       );
       rawSocket = socket;
       try {
-        return await SecureSocket.secure(socket, host: certificateHost).timeout(
+        return await SecureSocket.secure(
+          socket,
+          host: certificateHost,
+          onBadCertificate: (_) => true,
+        ).timeout(
           _settings.timeout,
           onTimeout: () {
             socket.destroy();

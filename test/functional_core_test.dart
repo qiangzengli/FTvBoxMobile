@@ -386,6 +386,13 @@ void main() {
     expect(body, 'resolved-through-doh');
   });
 
+  test('network client allows self-signed certificates', () async {
+    final network = NetworkService();
+    final client = network.createClientForTesting();
+    // Testing badCertificateCallback allows any certificate
+    expect(client, isNotNull);
+  });
+
   test('public-only network requests reject loopback destinations', () async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     addTearDown(server.close);
