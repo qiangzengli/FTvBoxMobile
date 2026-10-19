@@ -1,4 +1,5 @@
 import 'package:fbox/domain/media_item.dart';
+import 'package:fbox/widgets/source_poster_image.dart';
 import 'package:flutter/material.dart';
 
 class MediaPosterCard extends StatelessWidget {
@@ -35,15 +36,11 @@ class MediaPosterCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (item.posterUrl.isNotEmpty)
-              Image.network(
-                item.posterUrl,
-                fit: BoxFit.cover,
-                headers: item.headers,
-                errorBuilder: (_, _, _) => _PosterFallback(color: color),
-              )
-            else
-              _PosterFallback(color: color),
+            SourcePosterImage(
+              url: item.posterUrl,
+              headers: item.headers,
+              fallback: _PosterFallback(color: color),
+            ),
             Align(
               alignment: Alignment.topLeft,
               child: Container(

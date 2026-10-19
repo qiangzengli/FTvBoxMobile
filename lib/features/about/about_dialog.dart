@@ -21,7 +21,7 @@ Future<void> showFBoxAboutDialog(BuildContext context) {
             SizedBox(height: 14),
             Text(
               '基于 MBox 1.1.9 界面复刻的 Flutter 双平台应用。\n\n'
-              '软件当前提供界面与本地演示功能，不制作、收集或发布任何订阅内容。',
+              '软件不内置内容源，也不制作、收集或发布任何订阅内容。',
               style: TextStyle(height: 1.5),
             ),
           ],

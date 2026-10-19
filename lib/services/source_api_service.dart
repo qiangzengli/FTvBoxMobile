@@ -4,18 +4,83 @@ import 'dart:io';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/domain/source_models.dart';
 import 'package:fbox/services/network_service.dart';
+import 'package:flutter/services.dart';
 import 'package:xml/xml.dart';
 
 class SourceApiService {
   SourceApiService(this.network);
 
   final NetworkService network;
+  String spiderBridgeUrl = '';
   final Map<String, _ExtendCacheEntry> _extendCache = {};
   static const _extendCacheTtl = Duration(minutes: 10);
+  static const _spiderChannel = MethodChannel('com.fbox.app/spider');
+  static const _bridgeChannel = MethodChannel('com.fbox.app/spider_bridge');
+
+  bool supports(SiteSource source) {
+    if (source.isSupported) return true;
+    if (source.type != 3 || source.jar.isEmpty || !Platform.isIOS) {
+      return false;
+    }
+    final bridge = Uri.tryParse(spiderBridgeUrl.trim());
+    return bridge != null &&
+        {'http', 'https'}.contains(bridge.scheme) &&
+        bridge.host.isNotEmpty &&
+        bridge.pathSegments.where((segment) => segment.isNotEmpty).isNotEmpty;
+  }
+
+  Future<String> _spider(
+    SiteSource source,
+    String operation, [
+    Map<String, Object?> arguments = const {},
+  ]) async {
+    final request = <String, Object?>{
+      'jar': source.jar,
+      'api': source.api,
+      'key': source.identity,
+      'ext': source.ext,
+      'operation': operation,
+      ...arguments,
+    };
+    final timeout = Duration(seconds: source.timeoutSeconds + 45);
+    final String? response;
+    if (Platform.isIOS && spiderBridgeUrl.trim().isNotEmpty) {
+      final base = Uri.parse(spiderBridgeUrl.trim());
+      final endpoint = base.replace(
+        pathSegments: [
+          ...base.pathSegments.where((part) => part.isNotEmpty),
+          'invoke',
+        ],
+      );
+      final body = await network.postText(
+        endpoint,
+        body: jsonEncode(request),
+        headers: const {'Content-Type': 'application/json; charset=utf-8'},
+        timeout: timeout,
+        bypassProxy: true,
+      );
+      final decoded = jsonDecode(body);
+      if (decoded is! Map) throw const FormatException('Spider 转发返回格式错误');
+      if (decoded['error'] != null) {
+        throw StateError('Spider 转发失败：${decoded['error']}');
+      }
+      response = decoded['value']?.toString();
+    } else {
+      response = await _spiderChannel
+          .invokeMethod<String>('invoke', request)
+          .timeout(timeout);
+    }
+    if (response == null || response.trim().isEmpty) {
+      throw FormatException('站源“${source.name}”没有返回内容');
+    }
+    return response;
+  }
 
   Future<SourceCatalog> home(SiteSource source) async {
     _requireSupported(source);
-    final body = source.type == 4
+    final body = source.type == 3
+        ? await _spider(source, 'home')
+        : source.type == 4
         ? await _request(source, {
             'filter': 'true',
             if (source.ext.isNotEmpty) 'extend': await _extendFor(source),
@@ -24,9 +89,26 @@ class SourceApiService {
             Uri.parse(source.api),
             timeout: Duration(seconds: source.timeoutSeconds),
           );
-    return source.type == 0
+    final catalog = source.type == 0
         ? _parseXmlCatalog(body, source)
         : _parseJsonCatalog(body, source);
+    if (source.type != 3 || catalog.items.isNotEmpty) return catalog;
+    try {
+      final videos = _parseJsonCatalog(
+        await _spider(source, 'homeVideo'),
+        source,
+      );
+      if (videos.items.isEmpty) return catalog;
+      return SourceCatalog(
+        categories: catalog.categories,
+        items: videos.items,
+        page: catalog.page,
+        pageCount: catalog.pageCount,
+        filters: catalog.filters,
+      );
+    } catch (_) {
+      return catalog;
+    }
   }
 
   Future<SourceCatalog> category(
@@ -52,7 +134,13 @@ class SourceApiService {
         ..addAll(filters)
         ..['f'] = jsonEncode(filters);
     }
-    final body = await _request(source, params);
+    final body = source.type == 3
+        ? await _spider(source, 'category', {
+            'category': category,
+            'page': '$page',
+            'filters': filters,
+          })
+        : await _request(source, params);
     return source.type == 0
         ? _parseXmlCatalog(body, source)
         : _parseJsonCatalog(body, source);
@@ -75,7 +163,9 @@ class SourceApiService {
         params['extend'] = await _extendFor(source);
       }
     }
-    final body = await _request(source, params);
+    final body = source.type == 3
+        ? await _spider(source, 'search', {'query': query, 'page': '$page'})
+        : await _request(source, params);
     final catalog = source.type == 0
         ? _parseXmlCatalog(body, source)
         : _parseJsonCatalog(body, source);
@@ -91,7 +181,9 @@ class SourceApiService {
     if (source.type == 4 && source.ext.isNotEmpty) {
       params['extend'] = await _extendFor(source);
     }
-    final body = await _request(source, params);
+    final body = source.type == 3
+        ? await _spider(source, 'detail', {'id': id})
+        : await _request(source, params);
     final catalog = source.type == 0
         ? _parseXmlCatalog(body, source)
         : _parseJsonCatalog(body, source);
@@ -106,7 +198,13 @@ class SourceApiService {
     ParseSource? parser,
   }) async {
     var result = PlaybackRequest(url: episode.url, headers: episode.headers);
-    if (source.type == 4) {
+    if (source.type == 3) {
+      final body = await _spider(source, 'player', {
+        'id': episode.url,
+        'flag': flag,
+      });
+      result = _parsePlayback(body, fallback: result);
+    } else if (source.type == 4) {
       final body = await _request(source, {
         'play': episode.url,
         'flag': flag,
@@ -139,7 +237,39 @@ class SourceApiService {
       );
       result = _parsePlayback(body, fallback: result);
     }
-    return result;
+    return source.type == 3 ? _normalizeSpiderPlayback(source, result) : result;
+  }
+
+  Future<PlaybackRequest> _normalizeSpiderPlayback(
+    SiteSource source,
+    PlaybackRequest result,
+  ) async {
+    if (result.url.startsWith('video://')) {
+      return PlaybackRequest(
+        url: result.url.substring('video://'.length),
+        headers: result.headers,
+        parseRequired: result.parseRequired,
+      );
+    }
+    if (!result.url.startsWith('proxy://')) return result;
+    final baseText = Platform.isIOS
+        ? spiderBridgeUrl.trim()
+        : await _bridgeChannel.invokeMethod<String>('localAddress') ?? '';
+    if (baseText.isEmpty) {
+      throw const FormatException('Spider 代理服务尚未启动');
+    }
+    final base = Uri.parse(baseText);
+    final query = result.url.substring('proxy://'.length);
+    final separator = query.isEmpty ? '' : '&';
+    final endpoint = base.replace(
+      pathSegments: [
+        ...base.pathSegments.where((part) => part.isNotEmpty),
+        'proxy',
+      ],
+      query:
+          '$query${separator}siteKey=${Uri.encodeQueryComponent(source.identity)}',
+    );
+    return PlaybackRequest(url: endpoint.toString(), headers: result.headers);
   }
 
   SourceCatalog _parseJsonCatalog(String body, SiteSource source) {
@@ -259,6 +389,9 @@ class SourceApiService {
     final from =
         (value['vod_play_from'] ?? value['play_from'])?.toString() ?? '';
     final urls = (value['vod_play_url'] ?? value['play_url'])?.toString() ?? '';
+    final poster = _parseUrlHeaders(
+      (value['vod_pic'] ?? value['pic'])?.toString() ?? '',
+    );
     final lines = playLines ?? _parsePlayLines(from, urls);
     final year = (value['vod_year'] ?? value['year'])?.toString() ?? '';
     final category =
@@ -290,7 +423,8 @@ class SourceApiService {
                 .map((line) => line.episodes.length)
                 .fold(0, (a, b) => a > b ? a : b),
       color: _colorFor('$id$title'),
-      posterUrl: (value['vod_pic'] ?? value['pic'])?.toString() ?? '',
+      posterUrl: poster.url,
+      headers: poster.headers,
       playLines: lines,
     );
   }
@@ -335,23 +469,44 @@ class SourceApiService {
   ) {
     const marker = '@Headers=';
     final index = raw.indexOf(marker);
-    if (index < 0) return (url: raw, headers: const {});
-    final url = raw.substring(0, index);
-    final encoded = raw.substring(index + marker.length);
-    try {
-      final json = jsonDecode(
-        utf8.decode(base64.decode(base64.normalize(encoded))),
-      );
-      if (json is Map) {
-        return (
-          url: url,
-          headers: json.map((key, value) => MapEntry('$key', '$value')),
+    if (index >= 0) {
+      final url = raw.substring(0, index);
+      final encoded = raw.substring(index + marker.length);
+      try {
+        final json = jsonDecode(
+          utf8.decode(base64.decode(base64.normalize(encoded))),
         );
+        if (json is Map) {
+          return (
+            url: url,
+            headers: json.map((key, value) => MapEntry('$key', '$value')),
+          );
+        }
+      } on FormatException {
+        // Invalid header suffixes must not make the URL itself unusable.
       }
-    } on FormatException {
-      // Invalid header suffixes must not make the stream itself unusable.
+      return (url: url, headers: const {});
     }
-    return (url: url, headers: const {});
+    final suffix = RegExp(
+      r'@(Referer|User-Agent|Cookie|Origin|Authorization)=',
+      caseSensitive: false,
+    );
+    final matches = suffix.allMatches(raw).toList();
+    if (matches.isEmpty) return (url: raw, headers: const {});
+    final headers = <String, String>{};
+    for (var position = 0; position < matches.length; position++) {
+      final match = matches[position];
+      final end = position + 1 < matches.length
+          ? matches[position + 1].start
+          : raw.length;
+      final value = raw.substring(match.end, end);
+      try {
+        headers[match.group(1)!] = Uri.decodeComponent(value);
+      } on FormatException {
+        headers[match.group(1)!] = value;
+      }
+    }
+    return (url: raw.substring(0, matches.first.start), headers: headers);
   }
 
   static PlaybackRequest _parsePlayback(
@@ -359,8 +514,15 @@ class SourceApiService {
     required PlaybackRequest fallback,
   }) {
     final text = body.trim();
-    if (_looksPlayable(text)) {
+    if (text.startsWith('proxy://') || text.startsWith('video://')) {
       return PlaybackRequest(url: text, headers: fallback.headers);
+    }
+    if (_looksPlayable(text)) {
+      final parsed = _parseUrlHeaders(text);
+      return PlaybackRequest(
+        url: parsed.url,
+        headers: {...fallback.headers, ...parsed.headers},
+      );
     }
     try {
       final decoded = jsonDecode(_trimJson(text));
@@ -369,11 +531,13 @@ class SourceApiService {
       final nestedUrl = data is Map ? data['url']?.toString() : null;
       var url = nestedUrl ?? decoded['url']?.toString() ?? fallback.url;
       if (url.startsWith('//')) url = 'http:$url';
+      final parsed = _parseUrlHeaders(url);
       final rawHeaders = decoded['header'] ?? decoded['headers'];
       return PlaybackRequest(
-        url: url,
+        url: parsed.url,
         headers: {
           ...fallback.headers,
+          ...parsed.headers,
           if (rawHeaders is Map)
             ...rawHeaders.map((key, value) => MapEntry('$key', '$value')),
           if ((decoded['user-agent']?.toString() ?? '').trim().isNotEmpty)
@@ -510,12 +674,9 @@ class SourceApiService {
     return palette[value.hashCode.abs() % palette.length];
   }
 
-  static void _requireSupported(SiteSource source) {
-    if (source.isSupported) return;
-    throw UnsupportedError(
-      '站源“${source.name}”使用 Android Spider 类型 ${source.type}，'
-      '该 Java/Python 插件不能在 iOS 中运行。请使用标准 API 或远程 type=4 服务。',
-    );
+  void _requireSupported(SiteSource source) {
+    if (supports(source)) return;
+    throw UnsupportedError('站源“${source.name}”的 Spider 包无法在当前平台运行。');
   }
 }
 

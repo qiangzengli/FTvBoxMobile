@@ -1,5 +1,15 @@
 allprojects {
+    buildscript {
+        repositories {
+            maven { url = java.net.URI("https://maven.aliyun.com/repository/google") }
+            maven { url = java.net.URI("https://maven.aliyun.com/repository/public") }
+        }
+    }
+
     repositories {
+        maven { url = java.net.URI("https://storage.flutter-io.cn/download.flutter.io") }
+        maven { url = java.net.URI("https://maven.aliyun.com/repository/google") }
+        maven { url = java.net.URI("https://maven.aliyun.com/repository/public") }
         google()
         mavenCentral()
     }

@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:fbox/app/fbox_store.dart';
 import 'package:fbox/features/library/library_page.dart';
 import 'package:fbox/services/background_image_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -27,8 +28,8 @@ class _SettingsPageState extends State<SettingsPage> {
   String _homeLayout = '3 列 · 海报模式';
   String _aggregateMode = '多源聚合';
   String _background = '默认背景';
-  String _homeSource = 'FBox 演示订阅';
-  String _liveSource = '演示直播源';
+  String _homeSource = '未选择';
+  String _liveSource = '未选择';
   String _dns = '腾讯 DoH';
   String _scaleMode = '适应屏幕';
   double _cacheSize = 12.6;
@@ -52,7 +53,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _backgroundAlpha;
     _glass = store.settings['glass'] == true;
     _backgroundBlur = store.settings['backgroundBlur'] == true;
-    _homeSource = store.currentSource?.name ?? 'FBox 演示订阅';
+    _homeSource = store.currentSource?.name ?? '未选择';
     final preferredLiveUrl = store.settings['liveSourceUrl']?.toString() ?? '';
     for (final source in store.liveSources) {
       if (source.url == preferredLiveUrl) _liveSource = source.name;
@@ -226,6 +227,26 @@ class _SettingsPageState extends State<SettingsPage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _editProxy(store),
           ),
+          if (Platform.isIOS)
+            ListTile(
+              leading: const Icon(Icons.settings_ethernet_rounded),
+              title: const Text('Android Spider 转发地址'),
+              subtitle: Text(
+                store.spiderBridgeUrl.isEmpty
+                    ? '填写 Android 设备“设置”中的共享地址'
+                    : store.spiderBridgeUrl,
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _editSpiderBridge(store),
+            ),
+          if (Platform.isAndroid)
+            ListTile(
+              leading: const Icon(Icons.share_rounded),
+              title: const Text('共享 Spider 给 iOS'),
+              subtitle: const Text('同一局域网中的 iPhone 可使用本站源'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _showSpiderBridgeAddress,
+            ),
           ListTile(
             leading: const Icon(Icons.network_check_rounded),
             title: const Text('DNS 网络诊断'),
@@ -407,12 +428,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _selectHomeSource(FBoxStore store) => _selectOption(
     title: '首页站源',
-    options: ['FBox 演示订阅', ...store.sources.map((source) => source.name)],
+    options: [
+      '未选择',
+      ...store.sources.where(store.supportsSource).map((source) => source.name),
+    ],
     selected: _homeSource,
     onSelected: (value) async {
       try {
-        final key = value == 'FBox 演示订阅'
-            ? 'demo'
+        final key = value == '未选择'
+            ? ''
             : store.sources
                   .firstWhere((source) => source.name == value)
                   .identity;
@@ -444,11 +468,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _selectLiveSource(FBoxStore store) => _selectOption(
     title: '直播源',
-    options: ['演示直播源', ...store.liveSources.map((source) => source.name)],
+    options: ['未选择', ...store.liveSources.map((source) => source.name)],
     selected: _liveSource,
     onSelected: (value) {
-      final url = value == '演示直播源'
-          ? demoLiveSourceSetting
+      final url = value == '未选择'
+          ? ''
           : store.liveSources.firstWhere((source) => source.name == value).url;
       store.setSetting('liveSourceUrl', url);
       setState(() => _liveSource = value);
@@ -535,13 +559,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _editProxy(FBoxStore store) async {
-    final controller = TextEditingController(text: store.proxy);
+    var proxy = store.proxy;
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('网络代理'),
-        content: TextField(
-          controller: controller,
+        content: TextFormField(
+          initialValue: proxy,
+          onChanged: (value) => proxy = value,
           autofocus: true,
           decoration: const InputDecoration(
             hintText: 'http://127.0.0.1:7890',
@@ -554,14 +579,116 @@ class _SettingsPageState extends State<SettingsPage> {
             child: const Text('取消'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            onPressed: () => Navigator.pop(context, proxy.trim()),
             child: const Text('保存'),
           ),
         ],
       ),
     );
-    controller.dispose();
     if (value != null) store.setSetting('proxy', value);
+  }
+
+  Future<void> _editSpiderBridge(FBoxStore store) async {
+    var bridgeUrl = store.spiderBridgeUrl;
+    final value = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Android Spider 转发地址'),
+        content: TextFormField(
+          initialValue: bridgeUrl,
+          onChanged: (value) => bridgeUrl = value,
+          autofocus: true,
+          keyboardType: TextInputType.url,
+          decoration: const InputDecoration(
+            hintText: 'http://192.168.1.2:8793/共享密钥',
+            helperText: 'Android 和 iPhone 需连接同一局域网',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, bridgeUrl.trim()),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    if (value == null) return;
+    if (value.isNotEmpty) {
+      final uri = Uri.tryParse(value);
+      if (uri == null ||
+          !{'http', 'https'}.contains(uri.scheme) ||
+          uri.host.isEmpty ||
+          uri.pathSegments.where((part) => part.isNotEmpty).isEmpty) {
+        _showMessage('转发地址应包含 http(s) 地址和共享密钥');
+        return;
+      }
+    }
+    store.setSetting('spiderBridgeUrl', value);
+    if (value.isEmpty) return;
+    try {
+      final base = Uri.parse(value);
+      final endpoint = base.replace(
+        pathSegments: [
+          ...base.pathSegments.where((part) => part.isNotEmpty),
+          'health',
+        ],
+      );
+      final result = jsonDecode(
+        await store.network.getDirectText(
+          endpoint,
+          timeout: const Duration(seconds: 8),
+        ),
+      );
+      if (result is! Map || result['ok'] != true) {
+        throw const FormatException('服务返回无效');
+      }
+      if (mounted) _showMessage('已连接 Android Spider 服务');
+    } catch (error) {
+      if (mounted) _showMessage('地址已保存，但当前无法连接：$error');
+    }
+  }
+
+  Future<void> _showSpiderBridgeAddress() async {
+    try {
+      final address = await const MethodChannel(
+        'com.fbox.app/spider_bridge',
+      ).invokeMethod<String>('address');
+      if (!mounted) return;
+      if (address == null || address.isEmpty) {
+        _showMessage('未找到局域网地址，请连接 Wi-Fi 后重试');
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('共享 Spider 给 iOS'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('保持此 Android 应用运行，并将地址填入 iPhone 的同名设置：'),
+              const SizedBox(height: 12),
+              SelectableText(address),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: address));
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: const Text('复制地址'),
+            ),
+          ],
+        ),
+      );
+    } catch (error) {
+      if (mounted) _showMessage('读取共享地址失败：$error');
+    }
   }
 
   Future<void> _testDns(FBoxStore store) async {

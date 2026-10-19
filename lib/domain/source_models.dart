@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fbox/domain/media_item.dart';
+import 'package:flutter/foundation.dart';
 
 class FBoxSubscription {
   const FBoxSubscription({
@@ -93,7 +94,14 @@ class SiteSource {
   final int timeoutSeconds;
   final List<String> categories;
 
-  bool get isSupported => type == 0 || type == 1 || type == 4;
+  bool get isSupported =>
+      type == 0 ||
+      type == 1 ||
+      type == 4 ||
+      (type == 3 &&
+          !kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.android &&
+          jar.isNotEmpty);
   String get identity => subscriptionId.isEmpty ? key : '$subscriptionId::$key';
 }
 

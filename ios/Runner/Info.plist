@@ -34,7 +34,7 @@
 		<true/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>FBox 需要访问局域网以发现并连接 DLNA 与 AirPlay 播放设备。</string>
+	<string>FBox 需要访问局域网以连接 Android Spider 服务以及 DLNA 与 AirPlay 播放设备。</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_airplay._tcp</string>

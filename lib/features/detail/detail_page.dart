@@ -6,6 +6,7 @@ import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/domain/source_models.dart';
 import 'package:fbox/features/player/player_page.dart';
 import 'package:fbox/features/player/web_parser_page.dart';
+import 'package:fbox/widgets/source_poster_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -28,28 +29,11 @@ class _DetailPageState extends State<DetailPage> {
 
   MediaItem get item => _item;
 
-  List<MediaPlayLine> get _lines {
-    if (item.playLines.isNotEmpty) return item.playLines;
-    return [
-      for (final name in const ['高清线路', '备用线路'])
-        MediaPlayLine(
-          name: name,
-          episodes: [
-            for (var index = 1; index <= item.episodes; index++)
-              MediaEpisode(name: '$index', url: ''),
-          ],
-        ),
-    ];
-  }
-
-  static const _fallbackLine = MediaPlayLine(
-    name: '默认线路',
-    episodes: [MediaEpisode(name: '1', url: '')],
-  );
+  List<MediaPlayLine> get _lines => item.playLines;
 
   MediaPlayLine get _selectedLine {
     final lines = _lines;
-    if (lines.isEmpty) return _fallbackLine;
+    if (lines.isEmpty) return const MediaPlayLine(name: '', episodes: []);
     return lines[_sourceIndex.clamp(0, lines.length - 1)];
   }
 
@@ -86,6 +70,10 @@ class _DetailPageState extends State<DetailPage> {
   }
 
   Future<void> _play({ParseSource? parser}) async {
+    if (_selectedEpisode.url.isEmpty) {
+      _showMessage('当前影片没有可播放的剧集地址');
+      return;
+    }
     final store = FBoxScope.of(context);
     store.recordWatch(item);
     final episode = _selectedEpisode;
@@ -203,7 +191,13 @@ class _DetailPageState extends State<DetailPage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Text('${item.year} · ${item.category} · 中国大陆'),
+                        if (item.year.isNotEmpty || item.category.isNotEmpty)
+                          Text(
+                            [
+                              item.year,
+                              item.category,
+                            ].where((value) => value.isNotEmpty).join(' · '),
+                          ),
                         const SizedBox(height: 8),
                         Text('导演：${item.director}'),
                         const SizedBox(height: 8),
@@ -232,7 +226,9 @@ class _DetailPageState extends State<DetailPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       key: const Key('detail-play'),
-                      onPressed: _play,
+                      onPressed: _loading || _selectedEpisode.url.isEmpty
+                          ? null
+                          : _play,
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: const Text('立即播放'),
                       style: ElevatedButton.styleFrom(
@@ -303,8 +299,9 @@ class _DetailPageState extends State<DetailPage> {
                 item.description,
                 style: TextStyle(
                   height: 1.55,
-                  color: Theme.of(context).colorScheme.onSurface
-                      .withValues(alpha: 0.72),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.72),
                 ),
               ),
               const SizedBox(height: 20),
@@ -403,8 +400,9 @@ class _DetailPageState extends State<DetailPage> {
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.zero,
                       backgroundColor: _episode == episode
-                          ? Theme.of(context).colorScheme.primary
-                                .withValues(alpha: 0.12)
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.12)
                           : null,
                       side: BorderSide(
                         color: _episode == episode
@@ -437,7 +435,7 @@ class _DetailPageState extends State<DetailPage> {
   Future<void> _download() async {
     final episode = _selectedEpisode;
     if (episode.url.isEmpty) {
-      _showMessage('演示内容没有可下载的媒体地址');
+      _showMessage('当前内容没有可下载的媒体地址');
       return;
     }
     final store = FBoxScope.of(context);
@@ -469,7 +467,7 @@ class _DetailPageState extends State<DetailPage> {
   Future<void> _chooseParser() async {
     final store = FBoxScope.of(context);
     if (_selectedEpisode.url.isEmpty) {
-      _showMessage('演示内容不需要解析');
+      _showMessage('当前内容不需要解析');
       return;
     }
     final parser = await showModalBottomSheet<ParseSource?>(
@@ -511,7 +509,7 @@ class _DetailPageState extends State<DetailPage> {
   Future<void> _cast() async {
     final episode = _selectedEpisode;
     if (episode.url.isEmpty) {
-      _showMessage('演示内容没有可投屏的媒体地址');
+      _showMessage('当前内容没有可投屏的媒体地址');
       return;
     }
     final store = FBoxScope.of(context);
@@ -587,9 +585,7 @@ class _DetailPageState extends State<DetailPage> {
         );
         _showMessage('影片信息已复制，可粘贴分享');
       case 'feedback':
-        _showMessage(
-          '当前站源：${item.sourceKey.isEmpty ? '本地演示' : item.sourceKey}',
-        );
+        _showMessage('当前站源：${item.sourceKey.isEmpty ? '未知' : item.sourceKey}');
     }
   }
 
@@ -631,14 +627,11 @@ class _DetailPoster extends StatelessWidget {
       child: SizedBox(
         width: 124,
         height: 174,
-        child: item.posterUrl.isEmpty
-            ? fallback
-            : Image.network(
-                item.posterUrl,
-                fit: BoxFit.cover,
-                headers: item.headers,
-                errorBuilder: (_, _, _) => fallback,
-              ),
+        child: SourcePosterImage(
+          url: item.posterUrl,
+          headers: item.headers,
+          fallback: fallback,
+        ),
       ),
     );
   }

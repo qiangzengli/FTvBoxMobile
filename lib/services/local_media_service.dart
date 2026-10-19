@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
@@ -35,27 +36,65 @@ class LocalMediaService {
     '.flac',
   };
 
+  Future<File> _indexFile() async {
+    final directory = await _libraryDirectory();
+    return File(path.join(directory.path, 'imported_index.json'));
+  }
+
+  Future<Set<String>> _readIndex() async {
+    try {
+      final file = await _indexFile();
+      if (!await file.exists()) return {};
+      final decoded = jsonDecode(await file.readAsString());
+      if (decoded is List) {
+        return decoded.map((e) => e.toString()).toSet();
+      }
+    } on Object {
+      // Return empty set on corrupt index
+    }
+    return {};
+  }
+
+  Future<void> _writeIndex(Set<String> paths) async {
+    final file = await _indexFile();
+    await file.writeAsString(jsonEncode(paths.toList()), flush: true);
+  }
+
   Future<List<LocalMediaEntry>> scanLibrary() async {
     final directory = await _libraryDirectory();
-    return _scan(directory, recursive: true);
+    final localEntries = await _scan(directory, recursive: true);
+    final externalPaths = await _readIndex();
+    final externalEntries = <LocalMediaEntry>[];
+    final validExternalPaths = <String>{};
+    for (final extPath in externalPaths) {
+      final file = File(extPath);
+      if (await file.exists() && _isMedia(file.path)) {
+        validExternalPaths.add(extPath);
+        externalEntries.add(await _entry(file));
+      }
+    }
+    if (validExternalPaths.length != externalPaths.length) {
+      await _writeIndex(validExternalPaths);
+    }
+    final allEntries = <String, LocalMediaEntry>{};
+    for (final entry in [...localEntries, ...externalEntries]) {
+      allEntries[path.normalize(entry.filePath)] = entry;
+    }
+    final result = allEntries.values.toList();
+    result.sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
+    return result;
   }
 
   Future<List<LocalMediaEntry>> importFiles(Iterable<String> filePaths) async {
-    final directory = await _libraryDirectory();
     final imported = <LocalMediaEntry>[];
+    final index = await _readIndex();
     for (final filePath in filePaths) {
       final source = File(filePath);
       if (!await source.exists() || !_isMedia(source.path)) continue;
-      final destination = await _destinationFor(directory, source);
-      final file =
-          path.equals(
-            path.normalize(source.absolute.path),
-            path.normalize(destination.absolute.path),
-          )
-          ? source
-          : await source.copy(destination.path);
-      imported.add(await _entry(file));
+      index.add(source.path);
+      imported.add(await _entry(source));
     }
+    await _writeIndex(index);
     return imported;
   }
 
@@ -70,11 +109,14 @@ class LocalMediaService {
     final root = await _libraryDirectory();
     final normalizedRoot = path.normalize(root.absolute.path);
     final normalizedFile = path.normalize(File(entry.filePath).absolute.path);
-    if (!path.isWithin(normalizedRoot, normalizedFile)) {
-      throw const FileSystemException('只能删除已导入 FBox 的媒体');
+    final index = await _readIndex();
+    if (index.remove(entry.filePath) || index.remove(normalizedFile)) {
+      await _writeIndex(index);
     }
-    final file = File(normalizedFile);
-    if (await file.exists()) await file.delete();
+    if (path.isWithin(normalizedRoot, normalizedFile)) {
+      final file = File(normalizedFile);
+      if (await file.exists()) await file.delete();
+    }
   }
 
   Future<Directory> _libraryDirectory() async {
@@ -101,28 +143,6 @@ class LocalMediaService {
     return entries;
   }
 
-  Future<File> _destinationFor(Directory directory, File source) async {
-    final originalName = _safeName(path.basename(source.path));
-    var destination = File(path.join(directory.path, originalName));
-    if (!await destination.exists()) return destination;
-    if (path.equals(
-      path.normalize(source.absolute.path),
-      path.normalize(destination.absolute.path),
-    )) {
-      return destination;
-    }
-    final stem = path.basenameWithoutExtension(originalName);
-    final extension = path.extension(originalName);
-    var suffix = 2;
-    while (await destination.exists()) {
-      destination = File(
-        path.join(directory.path, '$stem ($suffix)$extension'),
-      );
-      suffix++;
-    }
-    return destination;
-  }
-
   static Future<LocalMediaEntry> _entry(File file) async {
     final stat = await file.stat();
     return LocalMediaEntry(
@@ -135,9 +155,4 @@ class LocalMediaService {
 
   static bool _isMedia(String filePath) =>
       _extensions.contains(path.extension(filePath).toLowerCase());
-
-  static String _safeName(String value) => value
-      .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
 }

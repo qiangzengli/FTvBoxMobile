@@ -19,27 +19,21 @@ class _LivePageState extends State<LivePage> {
   bool _playing = true;
   bool _controlsVisible = true;
   bool _channelsVisible = true;
-  String _source = '演示直播源';
+  String _source = '未选择';
   LiveSource? _activeSource;
-  String _programLabel = '20:00  黄金档特别节目';
+  String _programLabel = '暂无节目单';
   VideoPlayerController? _controller;
-  String _error = '';
+  String _error = '请先添加并选择直播源';
   bool _sourceInitialized = false;
   int _sourceLoadGeneration = 0;
   int _playGeneration = 0;
   int _epgLoadGeneration = 0;
   final Map<String, int> _selectedLines = {};
 
-  static const _demoGroups = ['央视频道', '卫视频道', '数字频道'];
-  static const _demoChannels = [
-    ['CCTV-1 综合', 'CCTV-2 财经', 'CCTV-5 体育', 'CCTV-6 电影'],
-    ['湖南卫视', '东方卫视', '浙江卫视', '江苏卫视'],
-    ['风云足球', '世界地理', '第一剧场', '怀旧剧场'],
-  ];
   List<LiveChannelGroup>? _loadedGroups;
 
   List<String> get groups =>
-      _loadedGroups?.map((group) => group.name).toList() ?? _demoGroups;
+      _loadedGroups?.map((group) => group.name).toList() ?? const [];
 
   List<List<String>> get channels =>
       _loadedGroups
@@ -47,9 +41,10 @@ class _LivePageState extends State<LivePage> {
             (group) => group.channels.map((channel) => channel.name).toList(),
           )
           .toList() ??
-      _demoChannels;
+      const [];
 
-  String get _currentChannel => channels[_group][_channel];
+  String get _currentChannel =>
+      channels.isEmpty ? '未选择频道' : channels[_group][_channel];
 
   LiveChannel? get _currentLiveChannel {
     final loaded = _loadedGroups;
@@ -139,7 +134,7 @@ class _LivePageState extends State<LivePage> {
                       ),
                     ),
                   ),
-                  if (_channelsVisible)
+                  if (_channelsVisible && groups.isNotEmpty)
                     Positioned(
                       left: 12,
                       right: 12,
@@ -237,7 +232,7 @@ class _LivePageState extends State<LivePage> {
   Future<void> _selectSource() async {
     final store = FBoxScope.maybeOf(context);
     if (store == null || store.liveSources.isEmpty) {
-      await _useDemoSource(store);
+      await _showOptions(title: '直播源', options: const ['请先添加订阅']);
       return;
     }
     final selected = await showModalBottomSheet<Object>(
@@ -250,10 +245,6 @@ class _LivePageState extends State<LivePage> {
           children: [
             const ListTile(
               title: Text('直播源', style: TextStyle(color: Colors.white)),
-            ),
-            ListTile(
-              title: const Text('演示直播源', style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context, demoLiveSourceSetting),
             ),
             for (final source in store.liveSources)
               ListTile(
@@ -273,33 +264,9 @@ class _LivePageState extends State<LivePage> {
         ),
       ),
     );
-    if (selected == demoLiveSourceSetting) {
-      await _useDemoSource(store);
-    } else if (selected is LiveSource) {
+    if (selected is LiveSource) {
       await _loadSource(selected);
     }
-  }
-
-  Future<void> _useDemoSource(FBoxStore? store) async {
-    _sourceLoadGeneration++;
-    _playGeneration++;
-    _epgLoadGeneration++;
-    final previous = _controller;
-    if (mounted) {
-      setState(() {
-        _source = '演示直播源';
-        _activeSource = null;
-        _programLabel = '20:00  黄金档特别节目';
-        _loadedGroups = null;
-        _group = 0;
-        _channel = 0;
-        _controller = null;
-        _playing = true;
-        _error = '';
-      });
-    }
-    await previous?.dispose();
-    store?.setSetting('liveSourceUrl', demoLiveSourceSetting);
   }
 
   Future<void> _loadSource(LiveSource source) async {
@@ -333,7 +300,7 @@ class _LivePageState extends State<LivePage> {
   String get _epgPrompt {
     final source = _activeSource;
     return source == null
-        ? '20:00  黄金档特别节目'
+        ? '暂无节目单'
         : source.epg.isEmpty
         ? '该直播源未配置节目单'
         : '点击节目单查看';
@@ -345,10 +312,7 @@ class _LivePageState extends State<LivePage> {
     final source = _activeSource;
     final channel = _currentLiveChannel;
     if (store == null || source == null || channel == null) {
-      await _showOptions(
-        title: '节目单',
-        options: const ['20:00  黄金档特别节目', '21:30  晚间新闻', '22:10  精品剧场'],
-      );
+      await _showOptions(title: '节目单', options: const ['暂无节目单']);
       return;
     }
     if (source.epg.isEmpty) {
@@ -470,10 +434,7 @@ class _LivePageState extends State<LivePage> {
 
   Future<void> _togglePlay() async {
     final controller = _controller;
-    if (controller == null) {
-      setState(() => _playing = !_playing);
-      return;
-    }
+    if (controller == null) return;
     if (controller.value.isPlaying) {
       await controller.pause();
     } else {
@@ -487,7 +448,7 @@ class _LivePageState extends State<LivePage> {
     final channel = _currentLiveChannel;
     final mediaUrl = _currentLiveUrl;
     if (store == null || channel == null || mediaUrl == null) {
-      await _showOptions(title: '投屏设备', options: const ['当前演示源不可投屏']);
+      await _showOptions(title: '投屏设备', options: const ['请先选择直播频道']);
       return;
     }
     try {
@@ -498,8 +459,9 @@ class _LivePageState extends State<LivePage> {
       final devices = await store.cast.discoverDlna();
       if (!mounted) return;
       if (devices.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('未发现 DLNA 设备')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('未发现 DLNA 设备')));
         return;
       }
       final names = devices.map((device) => device.name).toList();
@@ -513,8 +475,9 @@ class _LivePageState extends State<LivePage> {
       );
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('投屏失败：$error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('投屏失败：$error')));
       }
     }
   }

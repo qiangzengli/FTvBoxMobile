@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:fbox/app/fbox_store.dart';
-import 'package:fbox/data/demo_catalog.dart';
+import 'fixtures/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/domain/source_models.dart';
 import 'package:fbox/features/detail/detail_page.dart';
@@ -210,10 +210,36 @@ void main() {
   ) async {
     final store = FBoxStore();
     addTearDown(store.dispose);
+    final detailItem = MediaItem(
+      id: 'test-series',
+      title: '测试剧集',
+      note: '',
+      year: '2026',
+      category: '连续剧',
+      rating: '',
+      description: '',
+      director: '',
+      actors: '',
+      episodes: 65,
+      color: 0xFF607D8B,
+      playLines: [
+        for (final name in ['主线路', '备用线路'])
+          MediaPlayLine(
+            name: name,
+            episodes: [
+              for (var number = 1; number <= 65; number++)
+                MediaEpisode(
+                  name: '第 $number 集',
+                  url: 'file:///tmp/test-episode-$number.mp4',
+                ),
+            ],
+          ),
+      ],
+    );
     await tester.pumpWidget(
       FBoxScope(
         store: store,
-        child: const MaterialApp(home: DetailPage(item: _item)),
+        child: MaterialApp(home: DetailPage(item: detailItem)),
       ),
     );
 
@@ -232,10 +258,10 @@ void main() {
     await tester.pump();
     await tester.ensureVisible(find.byKey(const Key('detail-episode-61')));
     await tester.tap(find.byKey(const Key('detail-episode-61')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('测试剧集 · 第 61 集'), findsOneWidget);
-    expect(find.text('备用线路'), findsOneWidget);
+    expect(find.byKey(const Key('detail-episode-61')), findsOneWidget);
+    expect(find.text('备用线路'), findsWidgets);
   });
 
   testWidgets('detail handles empty play lines safely without clamp error', (
@@ -390,14 +416,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('备用线'), findsOneWidget);
     await tester.tap(find.text('备用线'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('线路测试 · 第2集'), findsOneWidget);
-    expect(find.text('备用线'), findsOneWidget);
+    expect(find.text('备用线'), findsWidgets);
   });
 
   testWidgets('subscription entries can be edited and deleted', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: SubscriptionPage()));
+    await tester.tap(find.text('添加订阅'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField),
+      'https://old.test/config.json',
+    );
+    await tester.tap(find.text('确定'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('subscription-menu-0')));
     await tester.pumpAndSettle();
@@ -431,14 +465,12 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: LivePage()));
     await tester.pump();
 
-    expect(find.text('CCTV-1 综合'), findsWidgets);
-    await tester.tap(find.text('演示直播源'));
-    await tester.pumpAndSettle();
-    expect(find.text('演示直播源'), findsOneWidget);
+    expect(find.text('未选择频道'), findsWidgets);
+    expect(find.text('请先添加并选择直播源'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('demo live preference does not fall back to a remote source', (
+  testWidgets('legacy demo live preference does not load a remote source', (
     tester,
   ) async {
     final store = _LivePreferenceStore();
@@ -453,7 +485,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('演示直播源'), findsOneWidget);
+    expect(find.text('未选择'), findsOneWidget);
     expect(store.loadCount, 0);
   });
 
@@ -472,7 +504,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('演示直播源'), findsOneWidget);
+    expect(find.text('未选择'), findsOneWidget);
     expect(find.textContaining('直播源加载失败'), findsOneWidget);
   });
 

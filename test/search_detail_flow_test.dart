@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('search opens a detail page and toggles favorite state', (
+  testWidgets('search without a source does not show fabricated results', (
     tester,
   ) async {
     await tester.pumpWidget(const FBoxApp());
@@ -17,16 +17,8 @@ void main() {
     await tester.enterText(find.byKey(const Key('search-field')), '庆余年');
     await tester.pump();
 
-    await tester.tap(find.byKey(const Key('search-result-qing-yu-nian')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('庆余年 第二季'), findsWidgets);
-    expect(find.text('立即播放'), findsOneWidget);
-    expect(find.text('收藏'), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('detail-favorite')));
-    await tester.pump();
-
-    expect(find.text('已收藏'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('暂无搜索结果'), findsOneWidget);
+    expect(find.byKey(const Key('search-result-qing-yu-nian')), findsNothing);
   });
 }

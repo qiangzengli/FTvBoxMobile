@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fbox/app/fbox_store.dart';
-import 'package:fbox/data/demo_catalog.dart';
+import 'fixtures/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/domain/source_models.dart';
 import 'package:fbox/services/download_manager.dart';
@@ -48,14 +48,17 @@ void main() {
     expect(config.liveSources.single.headers['User-Agent'], 'FBox');
   });
 
-  test('ParseSource appends cat_ext even when url does not contain query parameters', () {
-    const parser = ParseSource(
-      name: '解析',
-      url: 'https://parse.test/api',
-      rawExt: 'token=123',
-    );
-    expect(parser.requestUrl, startsWith('https://parse.test/api?cat_ext='));
-  });
+  test(
+    'ParseSource appends cat_ext even when url does not contain query parameters',
+    () {
+      const parser = ParseSource(
+        name: '解析',
+        url: 'https://parse.test/api',
+        rawExt: 'token=123',
+      );
+      expect(parser.requestUrl, startsWith('https://parse.test/api?cat_ext='));
+    },
+  );
 
   test('parses and merges M3U channels by group and name', () {
     const playlist = '''
@@ -268,6 +271,53 @@ void main() {
     },
   );
 
+  test(
+    'Spider-style poster and stream header suffixes become HTTP headers',
+    () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(server.close);
+      server.listen((request) async {
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(
+          jsonEncode({
+            'list': [
+              {
+                'vod_id': 'poster-1',
+                'vod_name': '封面测试',
+                'vod_pic':
+                    'https://image.test/a.jpg@Referer=https://movie.test/@User-Agent=Test%20Agent',
+                'vod_play_from': '主线',
+                'vod_play_url':
+                    '第1集\$https://video.test/a.m3u8@Referer=https://video.test/',
+              },
+            ],
+          }),
+        );
+        await request.response.close();
+      });
+      final service = SourceApiService(NetworkService());
+      final source = SiteSource(
+        key: 'headers',
+        name: '请求头源',
+        type: 1,
+        api: 'http://${server.address.address}:${server.port}/api',
+        subscriptionId: 'headers-sub',
+      );
+      final item = (await service.home(source)).items.single;
+      expect(item.posterUrl, 'https://image.test/a.jpg');
+      expect(item.headers['Referer'], 'https://movie.test/');
+      expect(item.headers['User-Agent'], 'Test Agent');
+      expect(
+        item.playLines.single.episodes.single.url,
+        'https://video.test/a.m3u8',
+      );
+      expect(
+        item.playLines.single.episodes.single.headers['Referer'],
+        'https://video.test/',
+      );
+    },
+  );
+
   test('favorites and history survive a new store instance', () async {
     SharedPreferences.setMockInitialValues({});
     final item = DemoCatalog.items.first;
@@ -468,34 +518,39 @@ void main() {
     );
   });
 
-  test('type 4 remote extensions cannot read and exfiltrate local files', () async {
-    final secret = File(
-      '${(await Directory.systemTemp.createTemp('fbox-ext-')).path}/secret.json',
-    );
-    addTearDown(() => secret.parent.delete(recursive: true));
-    await secret.writeAsString('{"token":"local-secret"}');
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    addTearDown(server.close);
-    String? receivedExtend;
-    server.listen((request) async {
-      receivedExtend = request.uri.queryParameters['extend'];
-      request.response.headers.contentType = ContentType.json;
-      request.response.write(jsonEncode({'class': const [], 'list': const []}));
-      await request.response.close();
-    });
-    final source = SiteSource(
-      key: 'safe-ext',
-      name: '安全扩展',
-      type: 4,
-      api: 'http://${server.address.address}:${server.port}/api',
-      subscriptionId: 'sub',
-      ext: secret.uri.toString(),
-    );
+  test(
+    'type 4 remote extensions cannot read and exfiltrate local files',
+    () async {
+      final secret = File(
+        '${(await Directory.systemTemp.createTemp('fbox-ext-')).path}/secret.json',
+      );
+      addTearDown(() => secret.parent.delete(recursive: true));
+      await secret.writeAsString('{"token":"local-secret"}');
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(server.close);
+      String? receivedExtend;
+      server.listen((request) async {
+        receivedExtend = request.uri.queryParameters['extend'];
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(
+          jsonEncode({'class': const [], 'list': const []}),
+        );
+        await request.response.close();
+      });
+      final source = SiteSource(
+        key: 'safe-ext',
+        name: '安全扩展',
+        type: 4,
+        api: 'http://${server.address.address}:${server.port}/api',
+        subscriptionId: 'sub',
+        ext: secret.uri.toString(),
+      );
 
-    await SourceApiService(NetworkService()).home(source);
+      await SourceApiService(NetworkService()).home(source);
 
-    expect(receivedExtend, isNot(contains('local-secret')));
-  });
+      expect(receivedExtend, isNot(contains('local-secret')));
+    },
+  );
 
   test(
     'a failed remote extension fetch is retried instead of cached forever',
@@ -997,7 +1052,7 @@ void main() {
   });
 
   test(
-    'current-source search stays in the demo catalog when demo is selected',
+    'current-source search returns no fabricated results without a source',
     () async {
       SharedPreferences.setMockInitialValues({});
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -1038,13 +1093,12 @@ void main() {
         url: 'http://${server.address.address}:${server.port}/config',
       );
       store.setSetting('aggregateMode', '当前站源');
-      await store.selectSource('demo');
+      await store.selectSource('');
 
       final results = await store.search('庆余年');
 
       expect(remoteSearches, 0);
-      expect(results.single.sourceKey, isEmpty);
-      expect(results.single.title, contains('庆余年'));
+      expect(results, isEmpty);
     },
   );
 
@@ -1252,15 +1306,16 @@ segment.m4s
       );
 
       final playlist = await File(entry.filePath).readAsString();
-      final mapPath = RegExp(r'#EXT-X-MAP:URI="([^"]+)"')
-          .firstMatch(playlist)
-          ?.group(1);
+      final mapPath = RegExp(
+        r'#EXT-X-MAP:URI="([^"]+)"',
+      ).firstMatch(playlist)?.group(1);
 
       expect(mapPath, isNotNull);
       expect(mapPath, isNot('init.mp4'));
       expect(
-        await File('${File(entry.filePath).parent.path}/$mapPath')
-            .readAsBytes(),
+        await File(
+          '${File(entry.filePath).parent.path}/$mapPath',
+        ).readAsBytes(),
         [0, 1, 2],
       );
     },
@@ -1347,9 +1402,9 @@ video.m3u8
       ),
     );
     final master = await File(entry.filePath).readAsString();
-    final audioPath = RegExp(r'#EXT-X-MEDIA[^\n]+URI="([^"]+)"')
-        .firstMatch(master)
-        ?.group(1);
+    final audioPath = RegExp(
+      r'#EXT-X-MEDIA[^\n]+URI="([^"]+)"',
+    ).firstMatch(master)?.group(1);
 
     expect(audioPath, isNotNull);
     final audioPlaylist = File(

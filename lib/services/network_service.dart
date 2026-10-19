@@ -38,6 +38,20 @@ class NetworkService {
     return _decode(response.bytes, response.headers['content-type']);
   }
 
+  Future<String> getDirectText(
+    Uri uri, {
+    Map<String, String> headers = const {},
+    Duration? timeout,
+  }) async {
+    final response = await getBytes(
+      uri,
+      headers: headers,
+      timeout: timeout,
+      bypassProxy: true,
+    );
+    return _decode(response.bytes, response.headers['content-type']);
+  }
+
   Future<String> getPublicText(
     Uri uri, {
     Map<String, String> headers = const {},
@@ -74,8 +88,9 @@ class NetworkService {
     Uri uri, {
     Map<String, String> headers = const {},
     Duration? timeout,
+    bool bypassProxy = false,
   }) async {
-    final client = _createClient();
+    final client = _createClient(forceDirect: bypassProxy);
     try {
       final response = await client
           .get(
@@ -108,8 +123,9 @@ class NetworkService {
     required String body,
     Map<String, String> headers = const {},
     Duration? timeout,
+    bool bypassProxy = false,
   }) async {
-    final client = _createClient();
+    final client = _createClient(forceDirect: bypassProxy);
     try {
       final response = await client
           .post(
@@ -203,12 +219,12 @@ class NetworkService {
 
   IOClient createClientForTesting() => _createClient();
 
-  IOClient _createClient({bool enableDoh = true}) {
+  IOClient _createClient({bool enableDoh = true, bool forceDirect = false}) {
     final inner = HttpClient()
       ..connectionTimeout = _settings.timeout
       ..idleTimeout = const Duration(seconds: 15)
       ..badCertificateCallback = (cert, host, port) => true;
-    final proxy = _settings.proxy.trim();
+    final proxy = forceDirect ? '' : _settings.proxy.trim();
     if (proxy.isNotEmpty) {
       final normalized = proxy.contains('://') ? proxy : 'http://$proxy';
       final uri = Uri.tryParse(normalized);

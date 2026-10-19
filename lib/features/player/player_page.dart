@@ -38,7 +38,7 @@ class _PlayerPageState extends State<PlayerPage> {
   bool _playing = false;
   bool _controlsVisible = true;
   bool _locked = false;
-  double _progress = 0.18;
+  double _progress = 0;
   double _speed = 1;
   late String _source = widget.source;
   late int _episode = widget.episode;
@@ -51,6 +51,7 @@ class _PlayerPageState extends State<PlayerPage> {
   bool _backgroundPlay = false;
   bool _longPressSpeedEnabled = true;
   double _speedBeforeLongPress = 1;
+  bool _longPressActive = false;
   bool _fullscreen = false;
   bool _initializationStarted = false;
   int _playerGeneration = 0;
@@ -154,6 +155,7 @@ class _PlayerPageState extends State<PlayerPage> {
         await controller.dispose();
         return;
       }
+      await controller.setPlaybackSpeed(_speed);
       await controller.play();
       if (mounted) {
         setState(() {
@@ -169,7 +171,9 @@ class _PlayerPageState extends State<PlayerPage> {
         }
       }
     } catch (error) {
-      if (controller != null && !identical(_controller, controller)) {
+      if (controller != null) {
+        controller.removeListener(_onVideoChanged);
+        if (identical(_controller, controller)) _controller = null;
         await controller.dispose();
       }
       if (mounted && generation == _playerGeneration) {
@@ -262,12 +266,10 @@ class _PlayerPageState extends State<PlayerPage> {
                   child: _BottomControls(
                     progress: _progress,
                     positionLabel: _formatDuration(
-                      _controller?.value.position ??
-                          const Duration(minutes: 8, seconds: 24),
+                      _controller?.value.position ?? Duration.zero,
                     ),
                     durationLabel: _formatDuration(
-                      _controller?.value.duration ??
-                          const Duration(minutes: 45, seconds: 16),
+                      _controller?.value.duration ?? Duration.zero,
                     ),
                     speed: _speed,
                     source: _source,
@@ -411,7 +413,7 @@ class _PlayerPageState extends State<PlayerPage> {
     final playback = _playback;
     final store = _store;
     if (playback == null || store == null) {
-      _showMessage('当前演示内容没有可投屏地址');
+      _showMessage('当前内容没有可投屏地址');
       return;
     }
     try {
@@ -465,8 +467,8 @@ class _PlayerPageState extends State<PlayerPage> {
 
   Future<void> _togglePlay() async {
     final controller = _controller;
-    if (controller == null) {
-      setState(() => _playing = !_playing);
+    if (controller == null || !controller.value.isInitialized) {
+      _showMessage('播放器尚未获得可播放媒体');
       return;
     }
     if (controller.value.isPlaying) {
@@ -477,14 +479,21 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   void _startLongPressSpeed() {
-    if (!_longPressSpeedEnabled || _locked) return;
+    if (!_longPressSpeedEnabled ||
+        _longPressActive ||
+        _locked ||
+        _controller?.value.isInitialized != true) {
+      return;
+    }
+    _longPressActive = true;
     _speedBeforeLongPress = _speed;
     unawaited(_controller?.setPlaybackSpeed(2));
     setState(() => _speed = 2);
   }
 
   void _stopLongPressSpeed() {
-    if (!_longPressSpeedEnabled || _locked) return;
+    if (!_longPressActive) return;
+    _longPressActive = false;
     final speed = _speedBeforeLongPress;
     unawaited(_controller?.setPlaybackSpeed(speed));
     setState(() => _speed = speed);
@@ -492,10 +501,7 @@ class _PlayerPageState extends State<PlayerPage> {
 
   Future<void> _seek(double value) async {
     final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) {
-      setState(() => _progress = value);
-      return;
-    }
+    if (controller == null || !controller.value.isInitialized) return;
     final milliseconds = (controller.value.duration.inMilliseconds * value)
         .round();
     await controller.seekTo(Duration(milliseconds: milliseconds));

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:fbox/app/fbox_store.dart';
-import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/features/detail/detail_page.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +16,7 @@ class _SearchPageState extends State<SearchPage> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   String _query = '';
-  List<MediaItem> _results = DemoCatalog.items.take(6).toList();
+  List<MediaItem> _results = const [];
   Timer? _debounce;
   int _requestId = 0;
   bool _loading = false;
@@ -40,8 +39,9 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _open(MediaItem item) {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => DetailPage(item: item)));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => DetailPage(item: item)));
   }
 
   @override
@@ -83,44 +83,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
             ),
-            if (_query.isEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.fromLTRB(18, 8, 18, 10),
-                child: Text(
-                  '热门搜索',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ['庆余年', '繁花', '沙丘', '歌手', '凡人修仙传']
-                      .map(
-                        (word) => ActionChip(
-                          label: Text(word),
-                          backgroundColor: Theme.of(context).cardColor,
-                          onPressed: () {
-                            _controller.text = word;
-                            _controller.selection = TextSelection.collapsed(
-                              offset: word.length,
-                            );
-                            _onQueryChanged(word);
-                          },
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(18, 20, 18, 8),
-                child: Text(
-                  '热门推荐',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ] else
+            if (_query.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
                 child: Text(
@@ -135,7 +98,9 @@ class _SearchPageState extends State<SearchPage> {
               child: _loading && _results.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : _results.isEmpty
-                  ? const Center(child: Text('暂无搜索结果'))
+                  ? Center(
+                      child: Text(_query.isEmpty ? '输入关键词搜索已导入的站源' : '暂无搜索结果'),
+                    )
                   : ListView.separated(
                       controller: _scrollController,
                       padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
@@ -174,8 +139,9 @@ class _SearchPageState extends State<SearchPage> {
                             child: Text(
                               '${item.year} · ${item.category} · ${item.note}',
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface
-                                    .withValues(alpha: 0.55),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.55),
                               ),
                             ),
                           ),
@@ -199,15 +165,12 @@ class _SearchPageState extends State<SearchPage> {
   void _onQueryChanged(String value) {
     _debounce?.cancel();
     final requestId = ++_requestId;
-    final local = DemoCatalog.search(value);
     setState(() {
       _query = value;
       _page = 0;
       _hasMore = true;
       _loadingMore = false;
-      if (local.isNotEmpty || FBoxScope.of(context).sources.isEmpty) {
-        _results = local;
-      }
+      _results = const [];
     });
     _debounce = Timer(
       const Duration(milliseconds: 350),
@@ -235,7 +198,7 @@ class _SearchPageState extends State<SearchPage> {
     if (query.trim().isEmpty) {
       if (mounted) {
         setState(() {
-          _results = FBoxScope.of(context).catalog.take(6).toList();
+          _results = const [];
           _loading = false;
           _loadingMore = false;
           _page = 0;
@@ -274,8 +237,9 @@ class _SearchPageState extends State<SearchPage> {
       }
     } catch (error) {
       if (mounted && requestId == _requestId) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('搜索失败：$error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('搜索失败：$error')));
       }
     } finally {
       if (mounted && requestId == _requestId) {

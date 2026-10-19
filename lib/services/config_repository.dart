@@ -277,7 +277,9 @@ class ConfigRepository {
               changeable: source.changeable,
               ext: resolveExtension(source.ext),
               playUrl: resolve(source.playUrl),
-              jar: resolve(source.jar),
+              jar: source.jar.contains(';md5;')
+                  ? '${resolve(source.jar.split(';md5;').first)};md5;${source.jar.split(';md5;').last}'
+                  : resolve(source.jar),
               timeoutSeconds: source.timeoutSeconds,
               categories: source.categories,
             ),

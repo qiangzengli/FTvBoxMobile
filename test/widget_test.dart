@@ -10,7 +10,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    expect(find.text('FBox'), findsOneWidget);
+    expect(find.text('尚未选择站源，暂无内容'), findsOneWidget);
     expect(find.text('搜索'), findsOneWidget);
     expect(find.text('首页'), findsOneWidget);
     expect(find.text('我的'), findsOneWidget);

@@ -27,6 +27,7 @@ class MBoxConfigParser {
 
   FBoxConfig parse({required String subscriptionId, required String input}) {
     final root = _decodeObject(input);
+    final rootSpider = root['spider']?.toString().trim() ?? '';
     final sites = <SiteSource>[];
     for (final raw in _list(root['sites'])) {
       if (raw is! Map) continue;
@@ -50,11 +51,15 @@ class MBoxConfigParser {
           changeable: _asInt(raw['changeable'], 1) != 0,
           ext: _stringify(raw['ext']),
           playUrl: raw['playUrl']?.toString().trim() ?? '',
-          jar: raw['jar']?.toString().trim() ?? '',
+          jar: (raw['jar']?.toString().trim().isNotEmpty == true
+              ? raw['jar'].toString().trim()
+              : type == 3
+              ? rootSpider
+              : ''),
           timeoutSeconds: _asInt(raw['timeout'], 15).clamp(5, 60),
-          categories: _list(raw['categories'])
-              .map((value) => value.toString())
-              .toList(),
+          categories: _list(
+            raw['categories'],
+          ).map((value) => value.toString()).toList(),
         ),
       );
     }

@@ -11,7 +11,7 @@ class SubscriptionPage extends StatefulWidget {
 }
 
 class _SubscriptionPageState extends State<SubscriptionPage> {
-  final List<String> _fallbackSubscriptions = ['FBox 演示订阅'];
+  final List<String> _fallbackSubscriptions = [];
   bool _busy = false;
 
   Future<void> _add() async {
@@ -262,8 +262,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary
-                            .withValues(alpha: 0.12),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(

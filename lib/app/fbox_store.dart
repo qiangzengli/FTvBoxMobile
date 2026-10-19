@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/domain/source_models.dart';
 import 'package:fbox/services/cast_service.dart';
@@ -25,9 +24,6 @@ class FBoxStore extends ChangeNotifier {
     downloads = DownloadManager(this.network)..addListener(_forwardChanges);
     cast = CastService(this.network);
     liveEpg = LiveEpgService(this.network);
-    for (final item in DemoCatalog.items) {
-      _media[item.storageId] = item;
-    }
   }
 
   static const _favoritesKey = 'library.favorites';
@@ -84,11 +80,11 @@ class FBoxStore extends ChangeNotifier {
   SiteSource? get currentSource => sourceByKey(_currentSourceKey);
 
   List<String> get categories => List.unmodifiable(_categories);
-  List<String> _categories = const ['推荐', '电影', '连续剧', '综艺', '动漫'];
+  List<String> _categories = const [];
   Map<String, String> _categoryIds = const {};
   Map<String, List<SourceFilter>> _categoryFilters = const {};
   List<MediaItem> get catalog => List.unmodifiable(_catalog);
-  List<MediaItem> _catalog = DemoCatalog.items;
+  List<MediaItem> _catalog = const [];
   bool get catalogLoading => _catalogLoading;
   bool _catalogLoading = false;
   bool get catalogLoadingMore => _catalogLoadingMore;
@@ -116,7 +112,7 @@ class FBoxStore extends ChangeNotifier {
     'glass': false,
     'backgroundBlur': false,
     'homeSourceKey': '',
-    'liveSourceUrl': demoLiveSourceSetting,
+    'liveSourceUrl': '',
     'player': '系统播放器',
     'hardwareDecode': true,
     'adFilter': true,
@@ -125,11 +121,14 @@ class FBoxStore extends ChangeNotifier {
     'renderMode': 'SurfaceView',
     'scaleMode': '适应屏幕',
     'ijkCache': '关闭',
+    'spiderBridgeUrl': '',
   };
 
   bool get privateBrowsing => _settings['privateBrowsing'] == true;
   bool get rememberProgress => _settings['rememberProgress'] != false;
   String get proxy => _settings['proxy']?.toString() ?? '';
+  String get spiderBridgeUrl => _settings['spiderBridgeUrl']?.toString() ?? '';
+  bool supportsSource(SiteSource source) => sourceApi.supports(source);
   String get dnsMode => _settings['dns']?.toString() ?? '系统 DNS';
 
   Future<void> initialize() async {
@@ -153,6 +152,10 @@ class FBoxStore extends ChangeNotifier {
       );
       final storedSettings = storage.readJsonObject(_settingsKey);
       if (storedSettings != null) _settings.addAll(storedSettings);
+      if (_settings['liveSourceUrl'] == demoLiveSourceSetting) {
+        _settings['liveSourceUrl'] = '';
+        await storage.writeJson(_settingsKey, _settings);
+      }
       final storedProgress = storage.readJsonObject(_progressKey);
       if (storedProgress != null) {
         _progress.addAll(
@@ -174,18 +177,20 @@ class FBoxStore extends ChangeNotifier {
       final sourceToRestore = preferredHomeSource.isNotEmpty
           ? preferredHomeSource
           : _currentSourceKey;
-      if (sourceToRestore == 'demo') {
-        await selectSource('demo');
-      } else if (sourceToRestore.isNotEmpty &&
-          sourceByKey(sourceToRestore) != null) {
+      final restoredSource = sourceByKey(sourceToRestore);
+      if (restoredSource != null && supportsSource(restoredSource)) {
         try {
           await selectSource(sourceToRestore);
         } on Object {
           // Keep the restored source selected so the user can retry it.
         }
+      } else if (sourceToRestore.isNotEmpty) {
+        await selectSource('');
+        _settings['homeSourceKey'] = '';
+        await storage.writeJson(_settingsKey, _settings);
       }
     } on Object {
-      // The in-memory demo remains usable if platform storage is unavailable.
+      // Keep the in-memory state usable if platform storage is unavailable.
     } finally {
       _initialized = true;
       notifyListeners();
@@ -297,7 +302,9 @@ class FBoxStore extends ChangeNotifier {
   void setSetting(String key, Object? value) {
     if (_settings[key] == value) return;
     _settings[key] = value;
-    if (key == 'proxy' || key == 'dohEndpoint') _updateNetworkSettings();
+    if (key == 'proxy' || key == 'dohEndpoint' || key == 'spiderBridgeUrl') {
+      _updateNetworkSettings();
+    }
     final storage = _storage;
     if (storage != null) {
       unawaited(storage.writeJson(_settingsKey, _settings));
@@ -445,10 +452,10 @@ class FBoxStore extends ChangeNotifier {
     if (sourceByKey(_currentSourceKey) == null) {
       _catalogGeneration++;
       _currentSourceKey = '';
-      _categories = const ['推荐', '电影', '连续剧', '综艺', '动漫'];
+      _categories = const [];
       _categoryIds = const {};
       _categoryFilters = const {};
-      _catalog = DemoCatalog.items;
+      _catalog = const [];
       _catalogLoading = false;
       _catalogLoadingMore = false;
       _catalogPage = 1;
@@ -470,10 +477,10 @@ class FBoxStore extends ChangeNotifier {
     if (key.isEmpty || key == 'demo') {
       _catalogGeneration++;
       _currentSourceKey = '';
-      _categories = const ['推荐', '电影', '连续剧', '综艺', '动漫'];
+      _categories = const [];
       _categoryIds = const {};
       _categoryFilters = const {};
-      _catalog = DemoCatalog.items;
+      _catalog = const [];
       _catalogLoading = false;
       _catalogLoadingMore = false;
       _catalogPage = 1;
@@ -488,6 +495,13 @@ class FBoxStore extends ChangeNotifier {
     }
     final source = sourceByKey(key);
     if (source == null) throw StateError('找不到站源：$key');
+    if (!supportsSource(source)) {
+      throw UnsupportedError(
+        source.type == 3 && Platform.isIOS
+            ? '请先在设置中填写 Android 设备的 Spider 转发地址'
+            : '当前平台不支持类型 ${source.type} 站源',
+      );
+    }
     final generation = ++_catalogGeneration;
     _currentSourceKey = source.identity;
     final storage = _storage;
@@ -539,7 +553,7 @@ class FBoxStore extends ChangeNotifier {
     final source = currentSource;
     if (source == null) {
       _catalogGeneration++;
-      _catalog = DemoCatalog.category(category);
+      _catalog = const [];
       _catalogLoading = false;
       _catalogLoadingMore = false;
       _catalogPage = 1;
@@ -636,15 +650,15 @@ class FBoxStore extends ChangeNotifier {
   Future<List<MediaItem>> search(String query, {int page = 1}) async {
     final normalized = query.trim();
     if (sources.isEmpty) {
-      return page == 1 ? DemoCatalog.search(normalized) : const [];
+      return const [];
     }
     final aggregate = _settings['aggregateMode'] == '多源聚合';
     final selectedSource = currentSource;
     if (!aggregate && selectedSource == null) {
-      return page == 1 ? DemoCatalog.search(normalized) : const [];
+      return const [];
     }
     final candidates = (aggregate ? sources : <SiteSource>[selectedSource!])
-        .where((source) => source.searchable && source.isSupported)
+        .where((source) => source.searchable && supportsSource(source))
         .toList();
     if (candidates.isEmpty) return const [];
     var successCount = 0;
@@ -756,17 +770,13 @@ class FBoxStore extends ChangeNotifier {
       }
       restoredSubscriptions.add(subscription);
     }
-    final restoredFavorites = listValue('favorites')
-        .map((value) => '$value')
-        .where((value) => value.isNotEmpty)
-        .toSet();
-    final restoredHistory = listValue('history')
-        .map((value) => '$value')
-        .where((value) => value.isNotEmpty)
-        .toList();
-    final restoredMedia = <String, MediaItem>{
-      for (final item in DemoCatalog.items) item.storageId: item,
-    };
+    final restoredFavorites = listValue(
+      'favorites',
+    ).map((value) => '$value').where((value) => value.isNotEmpty).toSet();
+    final restoredHistory = listValue(
+      'history',
+    ).map((value) => '$value').where((value) => value.isNotEmpty).toList();
+    final restoredMedia = <String, MediaItem>{};
     for (final value in listValue('media')) {
       if (value is! Map) throw const FormatException('备份包含无效媒体记录');
       final item = MediaItem.fromJson(Map<String, Object?>.from(value));
@@ -798,8 +808,9 @@ class FBoxStore extends ChangeNotifier {
         restoredSettings[key] = value;
       }
     }
-    final restoredProgress = mapValue('progress')
-        .map((key, value) => MapEntry('$key', double.tryParse('$value') ?? 0));
+    final restoredProgress = mapValue(
+      'progress',
+    ).map((key, value) => MapEntry('$key', double.tryParse('$value') ?? 0));
     final restoredThemeMode = _decodeTheme(backup['themeMode']?.toString());
     final restoredCurrentSourceKey =
         backup['currentSourceKey']?.toString() ?? '';
@@ -831,10 +842,10 @@ class FBoxStore extends ChangeNotifier {
     _configs.clear();
     _catalogGeneration++;
     _currentSourceKey = restoredCurrentSourceKey;
-    _categories = const ['推荐', '电影', '连续剧', '综艺', '动漫'];
+    _categories = const [];
     _categoryIds = const {};
     _categoryFilters = const {};
-    _catalog = DemoCatalog.items;
+    _catalog = const [];
     _catalogLoading = false;
     _catalogLoadingMore = false;
     _catalogPage = 1;
@@ -915,6 +926,7 @@ class FBoxStore extends ChangeNotifier {
   }
 
   void _updateNetworkSettings() {
+    sourceApi.spiderBridgeUrl = spiderBridgeUrl;
     network.updateSettings(
       NetworkSettings(
         proxy: proxy,

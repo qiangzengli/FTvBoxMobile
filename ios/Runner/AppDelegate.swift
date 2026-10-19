@@ -3,23 +3,26 @@ import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+@objc class AppDelegate: FlutterAppDelegate {
+  private var platformChannel: FlutterMethodChannel?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    GeneratedPluginRegistrant.register(with: self)
+    if let controller = window?.rootViewController as? FlutterViewController {
+      registerPlatformChannel(messenger: controller.binaryMessenger)
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    guard let registrar = engineBridge.pluginRegistry.registrar(
-      forPlugin: "FBoxPlatformPlugin"
-    ) else { return }
+  private func registerPlatformChannel(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(
       name: "com.fbox.app/platform",
-      binaryMessenger: registrar.messenger()
+      binaryMessenger: messenger
     )
+    platformChannel = channel
     channel.setMethodCallHandler { call, result in
       guard call.method == "showAirPlayPicker" else {
         result(FlutterMethodNotImplemented)

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:fbox/app/fbox_store.dart';
-import 'package:fbox/data/demo_catalog.dart';
 import 'package:fbox/domain/media_item.dart';
 import 'package:fbox/domain/source_models.dart';
 import 'package:fbox/features/detail/detail_page.dart';
@@ -9,6 +8,7 @@ import 'package:fbox/features/library/library_page.dart';
 import 'package:fbox/features/search/search_page.dart';
 import 'package:fbox/features/subscription/subscription_page.dart';
 import 'package:fbox/widgets/media_poster_card.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,21 +20,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _category = '推荐';
-  String _source = 'FBox';
   Map<String, String> _filters = const {};
 
   void _openDetail(MediaItem item) {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => DetailPage(item: item)));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => DetailPage(item: item)));
   }
 
   @override
   Widget build(BuildContext context) {
     final store = FBoxScope.of(context);
+    final hasSupportedSource = store.sources.any(store.supportsSource);
     final colors = Theme.of(context).colorScheme;
-    final items = store.currentSource == null
-        ? DemoCatalog.category(_category)
-        : store.catalog;
+    final items = store.catalog;
     final layout = store.settings['homeLayout']?.toString() ?? '3 列 · 海报模式';
     final columns = layout.startsWith('2')
         ? 2
@@ -46,7 +45,7 @@ class _HomePageState extends State<HomePage> {
         : columns == 2
         ? 0.76
         : 0.72;
-    final sourceLabel = store.currentSource?.name ?? _source;
+    final sourceLabel = store.currentSource?.name ?? '选择站源';
     return SafeArea(
       bottom: false,
       child: Column(
@@ -185,13 +184,35 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 10),
           Expanded(
-            child: store.catalogLoading
+            child: store.currentSource == null
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('尚未选择站源，暂无内容'),
+                        const SizedBox(height: 12),
+                        FilledButton(
+                          onPressed: !hasSupportedSource
+                              ? () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const SubscriptionPage(),
+                                  ),
+                                )
+                              : _showSources,
+                          child: Text(hasSupportedSource ? '选择站源' : '添加订阅'),
+                        ),
+                      ],
+                    ),
+                  )
+                : store.catalogLoading
                 ? const Center(child: CircularProgressIndicator())
                 : store.catalogError.isNotEmpty && items.isEmpty
                 ? _LoadError(
                     message: store.catalogError,
                     onRetry: () => _selectCategory(store, _category),
                   )
+                : items.isEmpty
+                ? const Center(child: Text('当前站源暂无内容'))
                 : NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       if (notification.metrics.extentAfter < 360 &&
@@ -258,32 +279,37 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
-              ...[
-                (key: 'demo', name: 'FBox', supported: true),
-                ...store.sources.map(
-                  (source) => (
-                    key: source.identity,
-                    name: source.name,
-                    supported: source.isSupported,
+              ...store.sources
+                  .map(
+                    (source) => (
+                      key: source.identity,
+                      name: source.name,
+                      type: source.type,
+                      supported: store.supportsSource(source),
+                    ),
+                  )
+                  .map(
+                    (source) => ListTile(
+                      title: Text(source.name),
+                      subtitle: source.supported
+                          ? null
+                          : Text(
+                              defaultTargetPlatform == TargetPlatform.iOS &&
+                                      source.type == 3
+                                  ? '请在设置中填写 Android Spider 转发地址'
+                                  : '当前版本不支持 Spider 站源',
+                            ),
+                      trailing: source.key == store.currentSourceKey
+                          ? Icon(
+                              Icons.check,
+                              color: Theme.of(context).colorScheme.primary,
+                            )
+                          : null,
+                      onTap: source.supported
+                          ? () => Navigator.pop(context, source.key)
+                          : null,
+                    ),
                   ),
-                ),
-              ].map(
-                (source) => ListTile(
-                  title: Text(source.name),
-                  subtitle: source.supported
-                      ? null
-                      : const Text('仅 Android Spider，iOS 不兼容'),
-                  trailing:
-                      (source.key == 'demo' && store.currentSource == null) ||
-                          source.key == store.currentSourceKey
-                      ? Icon(
-                          Icons.check,
-                          color: Theme.of(context).colorScheme.primary,
-                        )
-                      : null,
-                  onTap: () => Navigator.pop(context, source.key),
-                ),
-              ),
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
@@ -307,23 +333,24 @@ class _HomePageState extends State<HomePage> {
       await store.selectSource(value);
       if (mounted) {
         setState(() {
-          _source = store.currentSource?.name ?? 'FBox';
           _category = '推荐';
           _filters = const {};
         });
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$error')));
       }
     }
   }
 
   void _showLoadMoreError(Object error) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('加载下一页失败：$error')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('加载下一页失败：$error')));
   }
 
   Future<void> _selectCategory(FBoxStore store, String value) async {
@@ -335,8 +362,9 @@ class _HomePageState extends State<HomePage> {
       await store.loadCategory(value);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('加载分类失败：$error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('加载分类失败：$error')));
       }
     }
   }
@@ -358,8 +386,9 @@ class _HomePageState extends State<HomePage> {
       await store.loadCategory(_category, filters: selected);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('应用筛选失败：$error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('应用筛选失败：$error')));
       }
     }
   }
