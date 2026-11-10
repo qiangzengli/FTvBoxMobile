@@ -1,0 +1,6 @@
+# Copy to release-signing.properties and fill in your local release signing key.
+# Keep the key and the completed properties file private and backed up.
+storeFile=/absolute/path/to/fbox-mobile-release.keystore
+storePassword=YOUR_STORE_PASSWORD
+keyAlias=fbox-mobile
+keyPassword=YOUR_KEY_PASSWORD

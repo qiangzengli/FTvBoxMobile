@@ -20,7 +20,18 @@ adb -s 设备序列号 install -r app/build/outputs/apk/debug/app-debug.apk
 
 Homebrew JDK 可以使用 `/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`。不要使用 Java 25 运行该构建。
 
-应用 ID 延续 `com.fbox.fbox`，版本为 `2.1.2-mobile`，版本代码为 5。调试包使用本机 Android 调试签名，可覆盖同签名 Flutter 调试版。签名不同不能直接覆盖；正式发布需要单独配置发布签名。
+应用 ID 延续 `com.fbox.fbox`，版本为 `2.1.2-mobile`，版本代码为 5。调试包使用本机 Android 调试签名，可覆盖同签名 Flutter 调试版。签名不同不能直接覆盖。
+
+### Release 安装包
+
+已有发布签名可按 [签名备份说明](signing/README.md) 从加密备份恢复。也可将 `release-signing.properties.example` 复制为根目录的 `release-signing.properties`，填写自己的发布密钥路径、别名和密码。明文密钥、密码和实际配置均不入库；后续版本必须使用同一密钥才能覆盖安装。
+
+```sh
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+./gradlew :app:assembleRelease
+```
+
+已配置签名时，安装包位于 `app/build/outputs/apk/release/app-release.apk`，启用 R8 混淆和优化，关闭调试。未配置签名时生成 `app-release-unsigned.apk`，不能直接安装。独立 release 签名不能覆盖现有调试版；切换前先在应用内备份数据。
 
 从旧版升级时，首次启动会复制 Flutter 订阅地址、当前线路、数据源、收藏和历史到原生存储，保留原始 Flutter 偏好数据。播放进度和播放器设置暂不转换；原始数据仍保留。多订阅的源标识会映射为参考应用的源 key。
 

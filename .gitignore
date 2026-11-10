@@ -5,6 +5,8 @@ local.properties
 *.apk
 *.jks
 *.keystore
+release-signing.properties
+**/proguardMapping.txt
 
 .idea/
 *.iml

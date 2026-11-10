@@ -3,6 +3,13 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.compose'
 }
+
+def releaseSigningFile = rootProject.file('release-signing.properties')
+def releaseSigning = new Properties()
+if (releaseSigningFile.exists()) {
+    releaseSigningFile.withInputStream { releaseSigning.load(it) }
+}
+
 android {
     namespace 'com.github.tvbox.osc'
     compileSdk 36
@@ -23,15 +30,33 @@ android {
     }
     sourceSets.main.java.srcDirs += 'src/normal/java'
     buildFeatures { compose true; buildConfig true }
+    signingConfigs {
+        if (releaseSigningFile.exists()) {
+            release {
+                storeFile rootProject.file(releaseSigning.getProperty('storeFile'))
+                storePassword releaseSigning.getProperty('storePassword')
+                keyAlias releaseSigning.getProperty('keyAlias')
+                keyPassword releaseSigning.getProperty('keyPassword')
+            }
+        }
+    }
     buildTypes {
         debug { minifyEnabled false }
         release {
+            if (releaseSigningFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     packaging {
         resources.excludes += ['META-INF/DEPENDENCIES', 'META-INF/beans.xml']
+    }
+    lint {
+        // Direct APK distribution retains the reference app's target SDK for compatibility.
+        // Keep the Play publishing requirement visible without blocking local release builds.
+        warning 'ExpiredTargetSdkVersion'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -87,6 +112,8 @@ dependencies {
     implementation 'me.jessyan:autosize:1.2.1'
     implementation('com.thoughtworks.xstream:xstream:1.4.15') {
         exclude group: 'xmlpull', module: 'xmlpull'
+        // Android supplies XmlPullParser; xpp3_min duplicates framework classes.
+        exclude group: 'xpp3', module: 'xpp3_min'
     }
     implementation 'org.greenrobot:eventbus:3.2.0'
     implementation 'com.orhanobut:hawk:2.0.1'

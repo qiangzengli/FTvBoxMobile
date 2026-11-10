@@ -1,0 +1,12 @@
+{
+  "applicationId": "com.fbox.fbox",
+  "keyAlias": "fbox-mobile",
+  "keystoreType": "PKCS12",
+  "keyAlgorithm": "RSA",
+  "keySize": 3072,
+  "subject": "CN=FBox Mobile,OU=Android,O=FBox",
+  "notBefore": "2026-11-10T07:17:32+00:00",
+  "notAfter": "2054-03-28T07:17:32+00:00",
+  "sha256": "8ba70010a7fcd0a2d97178fcf5a688573ef788e9b6ee54a87938a337f83b21ce",
+  "sha1": "d7b895e3f28e53b702ac6a121f330817635b3a6c"
+}

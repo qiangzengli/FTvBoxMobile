@@ -180,6 +180,29 @@
 -keep class com.thoughtworks.xstream.converters.extended.RegexPatternConverter { *; }
 -keep class com.thoughtworks.xstream.converters.extended.CharsetConverter { *; }
 -keep class com.thoughtworks.xstream.** { *; }
+# XStream uses DomDriver in this app. Its other XML drivers and desktop-only
+# converters, plus Cling's optional Swing UI, reference APIs absent on Android.
+-dontwarn com.bea.xml.stream.**
+-dontwarn com.ctc.wstx.stax.**
+-dontwarn java.awt.**
+-dontwarn java.beans.BeanInfo
+-dontwarn java.beans.IntrospectionException
+-dontwarn java.beans.Introspector
+-dontwarn java.beans.PropertyDescriptor
+-dontwarn java.beans.PropertyEditor
+-dontwarn javax.activation.ActivationDataFlavor
+-dontwarn javax.swing.**
+-dontwarn javax.xml.bind.DatatypeConverter
+-dontwarn javax.xml.stream.**
+-dontwarn net.sf.cglib.proxy.**
+-dontwarn nu.xom.**
+-dontwarn org.codehaus.jettison.**
+-dontwarn org.dom4j.**
+-dontwarn org.jdom.**
+-dontwarn org.jdom2.**
+-dontwarn org.joda.time.**
+-dontwarn org.kxml2.io.KXmlParser
+-dontwarn org.xmlpull.mxp1.MXParser
 #eventbus
 -keepclassmembers class * {
     @org.greenrobot.eventbus.Subscribe <methods>;
