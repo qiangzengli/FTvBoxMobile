@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="top|center_horizontal" android:background="@android:color/transparent" android:orientation="vertical" android:padding="15dp" android:minHeight="0dp">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="FBox Android 手机版\n基于 TVBoxOS 20260914-1520 改编。\n\n本软件提供聚合展示与播放功能，不提供内容源。\n\n开源许可：GNU AGPL v3\n项目源码：https://github.com/qiangzengli/FTvBoxMobile\n上游：https://github.com/q215613905/TVBoxOS\n原始项目：https://github.com/CatVodTVOfficial/TVBoxOSC" android:textColor="@color/dialog_text_primary" android:textSize="14sp" android:autoLink="web" />
+</LinearLayout>

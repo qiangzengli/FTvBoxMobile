@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="点播订阅" android:textColor="#E6EAF2" android:textSize="15sp" android:layout_marginTop="12dp" android:layout_marginBottom="8dp" />
+    <EditText android:id="@+id/input" android:layout_width="match_parent" android:layout_height="56dp" android:background="@drawable/mobile_input" android:padding="12dp" android:textSize="16sp" android:textColor="#FFFFFF" android:textColorHint="#A6B1C5" android:hint="输入或粘贴点播配置地址" android:inputType="textUri" android:singleLine="true" android:imeOptions="actionNext|flagNoExtractUi" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
+        <TextView android:id="@+id/mobilePasteApi" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="粘贴" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+        <TextView android:id="@+id/inputSubmit" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="选择文件" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+    </LinearLayout>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="直播订阅" android:textColor="#E6EAF2" android:textSize="15sp" android:layout_marginTop="12dp" android:layout_marginBottom="8dp" />
+    <EditText android:id="@+id/inputLive" android:layout_width="match_parent" android:layout_height="56dp" android:background="@drawable/mobile_input" android:padding="12dp" android:textSize="16sp" android:textColor="#FFFFFF" android:textColorHint="#A6B1C5" android:hint="留空时使用点播配置" android:inputType="textUri" android:singleLine="true" android:imeOptions="actionDone|flagNoExtractUi" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
+        <TextView android:id="@+id/mobilePasteLive" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="粘贴" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+        <TextView android:id="@+id/inputSubmitLive" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="选择文件" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+        <TextView android:id="@+id/apiHistory" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="直播配置历史" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp" android:id="@+id/mobileApiActions">
+        <TextView android:id="@+id/mobileCancelApi" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="取消" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+        <TextView android:id="@+id/inputConfirm" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="保存并更新" android:textColor="#FFFFFF" android:textSize="14sp" android:gravity="center" android:background="@drawable/mobile_accent" android:clickable="true" android:focusable="true" android:layout_margin="3dp" />
+    </LinearLayout>
+    <TextView android:id="@+id/tvAddress" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+    <ImageView android:id="@+id/ivQRCode" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+    <TextView android:id="@+id/storagePermission" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+</LinearLayout>

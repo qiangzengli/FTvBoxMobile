@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@android:color/transparent" android:elevation="5dp" android:padding="5dp" android:minHeight="0dp">
+    <androidx.core.widget.NestedScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:maxHeight="220dp" android:background="@drawable/bg_scrollview" android:fillViewport="true" android:scrollbarStyle="insideOverlay" android:fadeScrollbars="true">
+        <TextView android:id="@+id/describe" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:textColor="@color/color_text_primary" android:textSize="16sp" android:focusable="true" android:minHeight="48dp" android:focusableInTouchMode="false" android:textIsSelectable="true" android:minWidth="48dp" />
+    </androidx.core.widget.NestedScrollView>
+</FrameLayout>

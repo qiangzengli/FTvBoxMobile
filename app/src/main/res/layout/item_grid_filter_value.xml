@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/filterValue" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="2dp" android:background="@drawable/mobile_surface" android:ellipsize="end" android:focusable="true" android:gravity="center_vertical" android:padding="8dp" android:singleLine="false" android:textColor="@color/color_FFFFFF" android:textSize="14sp" android:minHeight="48dp" android:focusableInTouchMode="false" android:maxLines="2" />

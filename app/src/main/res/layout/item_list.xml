@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/mobile_surface" android:focusable="true" android:minHeight="48dp" android:focusableInTouchMode="false">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:gravity="center_vertical">
+        <ImageView android:id="@+id/ivThumb" android:layout_width="40dp" android:layout_height="40dp" android:padding="0dp" android:scaleType="fitXY" />
+        <TextView android:id="@+id/tvName" android:layout_weight="3" android:layout_width="0dp" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="center_vertical" android:padding="5dp" android:singleLine="true" android:textColor="@android:color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/tvNote" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="end" android:padding="5dp" android:singleLine="true" android:textColor="@android:color/white" android:textSize="14sp" />
+    </LinearLayout>
+</FrameLayout>

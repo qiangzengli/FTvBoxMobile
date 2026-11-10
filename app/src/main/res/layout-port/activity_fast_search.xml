@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="match_parent" android:clipChildren="false" android:clipToPadding="false" android:orientation="vertical">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginTop="5dp" android:layout_marginBottom="5dp" android:paddingLeft="8dp" android:paddingRight="8dp">
+        <ImageButton android:id="@+id/mobileSearchBack" android:layout_width="48dp" android:layout_height="48dp" android:padding="12dp" android:src="@drawable/mobile_back" android:background="?android:attr/selectableItemBackgroundBorderless" android:contentDescription="返回" />
+        <TextView android:id="@+id/mSearchTitle" android:layout_width="112dp" android:layout_height="match_parent" android:layout_gravity="center_vertical" android:layout_marginRight="8dp" android:background="@drawable/mobile_surface" android:gravity="center" android:includeFontPadding="false" android:lines="2" android:maxLines="2" android:text="准备搜索&#10;结果 0" android:textColor="@android:color/white" android:textSize="14sp" />
+        <com.owen.tvrecyclerview.widget.TvRecyclerView android:id="@+id/mGridViewWordFenci" android:layout_width="0dp" android:layout_height="48dp" android:clipChildren="true" android:clipToPadding="false" android:focusable="false" app:tv_horizontalSpacingWithMargins="3dp" app:tv_selectedItemIsCentered="false" app:tv_verticalSpacingWithMargins="3dp" android:layout_weight="1" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:clipChildren="false" android:clipToPadding="false" android:orientation="vertical" android:layout_weight="1">
+        <LinearLayout android:id="@+id/llWord" android:layout_width="match_parent" android:layout_height="52dp" android:orientation="vertical" android:paddingLeft="8dp" android:paddingBottom="0dp">
+            <com.owen.tvrecyclerview.widget.TvRecyclerView android:id="@+id/mGridViewWord" android:layout_width="match_parent" android:layout_height="match_parent" android:clipChildren="true" android:clipToPadding="false" android:focusable="true" app:tv_horizontalSpacingWithMargins="3dp" app:tv_selectedItemIsCentered="false" app:tv_verticalSpacingWithMargins="3dp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/llLayout" android:layout_width="match_parent" android:layout_height="0dp" android:clipChildren="false" android:clipToPadding="false" android:orientation="vertical" android:paddingLeft="8dp" android:paddingBottom="0dp" android:paddingRight="8dp" tools:ignore="InOrMmUsage" android:layout_weight="1">
+            <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                <com.owen.tvrecyclerview.widget.TvRecyclerView android:id="@+id/mGridView" android:layout_width="match_parent" android:layout_height="match_parent" android:clipChildren="true" android:clipToPadding="false" android:paddingTop="5dp" android:paddingBottom="5dp" android:visibility="invisible" app:tv_horizontalSpacingWithMargins="6dp" app:tv_selectedItemIsCentered="false" app:tv_verticalSpacingWithMargins="6dp" />
+                <com.owen.tvrecyclerview.widget.TvRecyclerView android:id="@+id/mGridViewFilter" android:layout_width="match_parent" android:layout_height="match_parent" android:clipChildren="true" android:clipToPadding="false" android:paddingTop="5dp" android:paddingBottom="5dp" android:visibility="invisible" app:tv_horizontalSpacingWithMargins="3dp" app:tv_selectedItemIsCentered="false" app:tv_verticalSpacingWithMargins="3dp" />
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

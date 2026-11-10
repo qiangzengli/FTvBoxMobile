@@ -1,0 +1,1 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_selected="true" android:drawable="@drawable/mobile_accent"/><item android:state_activated="true" android:drawable="@drawable/mobile_accent"/><item android:drawable="@drawable/mobile_surface"/></selector>

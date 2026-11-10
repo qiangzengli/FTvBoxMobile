@@ -1,0 +1,616 @@
+{
+  "upstream_commit": "ab11d289e09963a9daf65ca7f6b7a9a8cbe184e1",
+  "layouts": {
+    "activity_collect.xml": {
+      "tvDelTip": "TextView",
+      "tvDelete": "ImageView",
+      "tvClear": "ImageView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "activity_detail.xml": {
+      "llLayout": "LinearLayout",
+      "topLayout": "LinearLayout",
+      "thumbContainer": "FrameLayout",
+      "ivThumb": "ImageView",
+      "previewPlayerPlace": "View",
+      "tvName": "TextView",
+      "tvSite": "TextView",
+      "tvYear": "TextView",
+      "tvArea": "TextView",
+      "tvLang": "TextView",
+      "tvType": "TextView",
+      "tvActor": "TextView",
+      "tvDirector": "TextView",
+      "tvPlayUrl": "TextView",
+      "tvDes": "TextView",
+      "tvPlay": "TextView",
+      "tvQuickSearch": "TextView",
+      "tvDesc": "TextView",
+      "tvCollect": "TextView",
+      "tvChangeSource": "TextView",
+      "mEmptyPlaylist": "LinearLayout",
+      "mGridViewFlag": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mSeriesGroupTv": "LinearLayout",
+      "mSeriesSortTv": "TextView",
+      "mSeriesGroupView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mGridViewQuality": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "previewPlayer": "androidx.fragment.app.FragmentContainerView",
+      "previewPlayerBlock": "View"
+    },
+    "activity_fast_search.xml": {
+      "mSearchTitle": "TextView",
+      "mGridViewWordFenci": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "llWord": "LinearLayout",
+      "mGridViewWord": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "llLayout": "LinearLayout",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mGridViewFilter": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "activity_history.xml": {
+      "tvDelTip": "TextView",
+      "tvDelete": "ImageView",
+      "tvClear": "ImageView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "activity_home.xml": {
+      "topLayout": "LinearLayout",
+      "tvName": "TextView",
+      "tvDate": "TextView",
+      "contentLayout": "LinearLayout",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mViewPager": "com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager"
+    },
+    "activity_live_play.xml": {
+      "live_root": "FrameLayout",
+      "mVideoView": "xyz.doikki.videoplayer.player.VideoView",
+      "switchChannelSnapshotOverlay": "FrameLayout",
+      "switchChannelSnapshotImage": "ImageView",
+      "tv_selected_channel": "TextView",
+      "tvLeftChannnelListLayout": "LinearLayout",
+      "ll_typeSelect": "LinearLayout",
+      "mGroupGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "divLoadEpgleft": "LinearLayout",
+      "tv_arrow0": "TextView",
+      "iv_arrow2": "ImageView",
+      "tv_arrow3": "TextView",
+      "mChannelGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "divLoadEpgDivider": "LinearLayout",
+      "divLoadEpg": "LinearLayout",
+      "tv_arrow": "TextView",
+      "iv_arrow": "ImageView",
+      "tv_arrow2": "TextView",
+      "divEPG": "LinearLayout",
+      "mEpgDateGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "lv_epg": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "txtNoEpg": "TextView",
+      "tvRightSettingLayout": "LinearLayout",
+      "mSettingItemView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mSettingGroupView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "tvChannel": "TextView",
+      "tv_top_status": "LinearLayout",
+      "tvNetSpeed": "TextView",
+      "tvTime": "TextView",
+      "ll_epg": "RelativeLayout",
+      "view_bg": "View",
+      "channelinfo": "LinearLayout",
+      "tv_channel_bottom_number": "TextView",
+      "live_icon_null_bg": "FrameLayout",
+      "live_icon_null_text": "TextView",
+      "img_live_icon": "ImageView",
+      "tv_channel_bar_name": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "tv_current_program": "TextView",
+      "tv_current_program_time": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "tv_current_program_name": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "view_line": "View",
+      "tv_next_program": "TextView",
+      "tv_next_program_time": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "tv_next_program_name": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "live_status_info": "RelativeLayout",
+      "tv_source": "TextView",
+      "tvResolution": "TextView",
+      "tv_shownum": "TextView",
+      "tv_showTime": "TextView",
+      "ll_loading": "LinearLayout",
+      "ll_right_top_huikan": "RelativeLayout",
+      "iv_back_bg": "ImageView",
+      "tv_right_top_epg_name": "TextView",
+      "tv_right_top_type": "TextView",
+      "ll_right_top_loading": "RelativeLayout",
+      "iv_circle_bg": "ImageView",
+      "tv_right_top_channel_name": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "backcontroller": "RelativeLayout",
+      "ll_play": "LinearLayout",
+      "iv_play": "ImageView",
+      "progress_container": "LinearLayout",
+      "iv_playpause": "ImageView",
+      "tv_currentpos": "TextView",
+      "pb_progressbar": "SeekBar",
+      "tv_duration": "TextView"
+    },
+    "activity_local_file.xml": {
+      "tvTitle": "TextView",
+      "tvPath": "TextView",
+      "fileList": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "tvEmpty": "TextView"
+    },
+    "activity_play.xml": {
+      "mVideoView": "com.github.tvbox.osc.player.MyVideoView",
+      "danmaku": "master.flame.danmaku.ui.widget.DanmakuView",
+      "play_loading": "ProgressBar",
+      "play_load_error": "ImageView",
+      "play_load_tip": "TextView"
+    },
+    "activity_push.xml": {
+      "rootLayout": "FrameLayout",
+      "ivQRCode": "ImageView",
+      "tvAddress": "TextView",
+      "pushLocal": "TextView"
+    },
+    "activity_search.xml": {
+      "tvSearchCheckboxBtn": "TextView",
+      "etSearch": "EditText",
+      "tvSearch": "TextView",
+      "tvClear": "TextView",
+      "keyBoardRoot": "com.github.tvbox.osc.ui.tv.widget.SearchKeyboard",
+      "remoteRoot": "LinearLayout",
+      "tvAddress": "TextView",
+      "ivQRCode": "ImageView",
+      "llWord": "LinearLayout",
+      "wordSwitch": "TextView",
+      "mGridViewWord": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "llHistoryWord": "LinearLayout",
+      "tvHistoryTitle": "TextView",
+      "tvHistoryClear": "ImageView",
+      "historyWordGrid": "GridLayout",
+      "llLayout": "LinearLayout",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "activity_setting.xml": {
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mViewPager": "com.github.tvbox.osc.ui.tv.widget.NoScrollViewPager"
+    },
+    "box_vod_control_view.xml": {
+      "center_container": "LinearLayout",
+      "video_size": "TextView",
+      "video_speed": "TextView",
+      "bottom_container": "LinearLayout",
+      "iv_play": "ImageView",
+      "curr_time": "TextView",
+      "seekBar": "SeekBar",
+      "total_time": "TextView",
+      "play_pre": "TextView",
+      "play_next": "TextView",
+      "bottom_progress": "ProgressBar",
+      "tv_info_container": "FrameLayout",
+      "tv_info_name": "TextView",
+      "tv_info_hint": "TextView",
+      "tv_pause_container": "LinearLayout",
+      "tv_pause_progress_text": "TextView",
+      "tv_progress_container": "LinearLayout",
+      "tv_progress_icon": "ImageView",
+      "tv_progress_text": "TextView",
+      "tv_bottom_container": "LinearLayout",
+      "tv_play_next": "TextView",
+      "tv_play_pre": "TextView",
+      "tv_video_speed": "TextView",
+      "tv_video_size": "TextView"
+    },
+    "dialog_about.xml": {},
+    "dialog_api.xml": {
+      "ivQRCode": "ImageView",
+      "tvAddress": "TextView",
+      "apiHistory": "TextView",
+      "storagePermission": "TextView",
+      "input": "EditText",
+      "inputSubmit": "TextView",
+      "inputLive": "EditText",
+      "inputSubmitLive": "TextView",
+      "inputConfirm": "TextView"
+    },
+    "dialog_api_history.xml": {
+      "title": "TextView",
+      "list": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_backup.xml": {
+      "title": "TextView",
+      "backup_buttons": "LinearLayout",
+      "backupNow": "TextView",
+      "storagePermission": "TextView",
+      "restore_tip": "TextView",
+      "list": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_cast.xml": {
+      "title": "TextView",
+      "tvCastTip": "TextView",
+      "list": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "progressBar": "ProgressBar",
+      "tvScanning": "TextView",
+      "tvEmpty": "TextView",
+      "btnRefresh": "TextView",
+      "btnCancel": "TextView"
+    },
+    "dialog_checkbox_search.xml": {
+      "root": "LinearLayout",
+      "checkAll": "TextView",
+      "clearAll": "TextView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_confirm.xml": {
+      "confirmation": "TextView",
+      "btnConfirm": "TextView",
+      "btnCancel": "TextView"
+    },
+    "dialog_danmu_api.xml": {
+      "input": "EditText",
+      "inputDefault": "TextView",
+      "inputSubmit": "TextView"
+    },
+    "dialog_danmu_setting.xml": {
+      "danmuSearch": "TextView",
+      "trv_color": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "speed": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "sizeSub": "TextView",
+      "size": "TextView",
+      "sizeAdd": "TextView",
+      "lineSub": "TextView",
+      "line": "TextView",
+      "lineAdd": "TextView",
+      "alphaSub": "TextView",
+      "alpha": "TextView",
+      "alphaAdd": "TextView"
+    },
+    "dialog_desc.xml": {
+      "describe": "TextView"
+    },
+    "dialog_episode.xml": {
+      "episode_half": "androidx.constraintlayout.widget.Guideline",
+      "episode_dismiss": "View",
+      "episode_title": "TextView",
+      "episode_list": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_grid_filter.xml": {
+      "root": "FrameLayout",
+      "filterRoot": "LinearLayout"
+    },
+    "dialog_live_password.xml": {
+      "input": "EditText",
+      "inputSubmit": "TextView"
+    },
+    "dialog_quick_search.xml": {
+      "mGridViewWord": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_remote.xml": {
+      "ivQRCode": "ImageView",
+      "tvAddress": "TextView"
+    },
+    "dialog_search_danmu.xml": {
+      "input": "EditText",
+      "inputSubmit": "TextView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "loadingBar": "ProgressBar"
+    },
+    "dialog_search_remotetv.xml": {
+      "title": "TextView",
+      "list": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_search_subtitle.xml": {
+      "input": "EditText",
+      "inputSubmit": "TextView",
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "loadingBar": "ProgressBar"
+    },
+    "dialog_select.xml": {
+      "cl_root": "androidx.constraintlayout.widget.ConstraintLayout",
+      "title": "TextView",
+      "list": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "dialog_subtitle.xml": {
+      "selectInternal": "TextView",
+      "selectLocal": "TextView",
+      "selectRemote": "TextView",
+      "subtitleSizeMinus": "TextView",
+      "subtitleSizeText": "TextView",
+      "subtitleSizePlus": "TextView",
+      "subtitleStyleOne": "TextView",
+      "subtitlePositionText": "TextView",
+      "subtitleStyleTwo": "TextView",
+      "subtitleTimeHint": "TextView",
+      "subtitleTimeMinus": "TextView",
+      "subtitleTimeText": "TextView",
+      "subtitleTimePlus": "TextView"
+    },
+    "dialog_tip.xml": {
+      "tipInfo": "TextView",
+      "leftBtn": "TextView",
+      "rightBtn": "TextView"
+    },
+    "dialog_xwalk.xml": {
+      "downXWalkArch": "TextView",
+      "downXWalk": "TextView"
+    },
+    "epglist_item.xml": {
+      "cl_epg": "LinearLayout",
+      "touch": "LinearLayout",
+      "tv_epg_time": "TextView",
+      "tv_epg_name": "com.github.tvbox.osc.ui.tv.widget.MarqueeTextView",
+      "shiyi": "TextView",
+      "wqddg_AudioWaveView": "com.github.tvbox.osc.ui.tv.widget.AudioWaveView"
+    },
+    "fragment_grid.xml": {
+      "mGridView": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "fragment_model.xml": {
+      "llDebug": "LinearLayout",
+      "tvDebugOpen": "TextView",
+      "llApi": "LinearLayout",
+      "tvApi": "TextView",
+      "llApiRightGroup": "LinearLayout",
+      "llApiHistory": "LinearLayout",
+      "tvMediaCodec1": "TextView",
+      "llApiLine": "LinearLayout",
+      "tvApiLine": "TextView",
+      "llHomeApi": "LinearLayout",
+      "tvHomeApi": "TextView",
+      "tvHomeLive": "LinearLayout",
+      "tvHomeText": "TextView",
+      "llHomeRec": "LinearLayout",
+      "tvHomeRec": "TextView",
+      "llHomeRecStyle": "LinearLayout",
+      "showRecStyleText": "TextView",
+      "llSearchView": "LinearLayout",
+      "tvSearchView": "TextView",
+      "showFastSearch": "LinearLayout",
+      "showFastSearchText": "TextView",
+      "llPlay": "LinearLayout",
+      "tvPlay": "TextView",
+      "llMediaCodec": "LinearLayout",
+      "tvMediaCodec": "TextView",
+      "m3u8Ad": "LinearLayout",
+      "m3u8AdText": "TextView",
+      "danmuOpen": "LinearLayout",
+      "danmuOpenText": "TextView",
+      "danmuApi": "LinearLayout",
+      "danmuApiText": "TextView",
+      "llRender": "LinearLayout",
+      "tvRenderType": "TextView",
+      "autoSwitchLine": "LinearLayout",
+      "autoSwitchLineText": "TextView",
+      "llDns": "LinearLayout",
+      "tvDns": "TextView",
+      "llParseWebVew": "LinearLayout",
+      "tvParseWebView": "TextView",
+      "llHistoryMerge": "LinearLayout",
+      "tvHistoryMerge": "TextView",
+      "llHistoryNum": "LinearLayout",
+      "tvHistoryNum": "TextView",
+      "llWp": "LinearLayout",
+      "llWpRecovery": "LinearLayout",
+      "llScale": "LinearLayout",
+      "tvScaleType": "TextView",
+      "showPreview": "LinearLayout",
+      "showPreviewText": "TextView",
+      "llIjkCachePlay": "LinearLayout",
+      "tvIjkCachePlay": "TextView",
+      "llClearCache": "LinearLayout",
+      "llBackup": "LinearLayout",
+      "llAbout": "LinearLayout"
+    },
+    "fragment_user.xml": {
+      "tvUserHome": "LinearLayout",
+      "tvHistory": "LinearLayout",
+      "tvLive": "LinearLayout",
+      "tvSearch": "LinearLayout",
+      "tvPush": "LinearLayout",
+      "tvFavorite": "LinearLayout",
+      "tvSetting": "LinearLayout",
+      "tvHotList": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "item_button.xml": {
+      "tvName": "TextView"
+    },
+    "item_cast_device.xml": {
+      "ivDeviceIcon": "ImageView",
+      "tvDeviceName": "TextView",
+      "tvDeviceIp": "TextView"
+    },
+    "item_dialog_api_history.xml": {
+      "tvName": "TextView",
+      "tvDel": "ImageView"
+    },
+    "item_dialog_backup.xml": {
+      "tvName": "TextView",
+      "tvDel": "ImageView"
+    },
+    "item_dialog_checkbox_search.xml": {
+      "oneSearchSource": "CheckBox"
+    },
+    "item_dialog_select.xml": {
+      "tvName": "TextView"
+    },
+    "item_grid.xml": {
+      "ivThumb": "ImageView",
+      "tvYear": "TextView",
+      "tvArea": "TextView",
+      "tvLang": "TextView",
+      "tvNote": "TextView",
+      "tvName": "TextView",
+      "tvActor": "TextView",
+      "delFrameLayout": "FrameLayout",
+      "imageView": "ImageView"
+    },
+    "item_grid_filter.xml": {
+      "filterName": "TextView",
+      "mFilterKv": "com.owen.tvrecyclerview.widget.TvRecyclerView"
+    },
+    "item_grid_filter_value.xml": {
+      "filterValue": "TextView"
+    },
+    "item_home_sort.xml": {
+      "tvTitle": "TextView",
+      "tvFilter": "ImageView",
+      "tvFilterColor": "ImageView"
+    },
+    "item_keyboard.xml": {
+      "keyName": "TextView"
+    },
+    "item_list.xml": {
+      "ivThumb": "ImageView",
+      "tvName": "TextView",
+      "tvNote": "TextView"
+    },
+    "item_live.xml": {
+      "tvLiveAdd": "TextView",
+      "tvLive": "TextView"
+    },
+    "item_live_channel.xml": {
+      "tvChannelNum": "TextView",
+      "tvChannelName": "TextView"
+    },
+    "item_live_channel_group.xml": {
+      "tvChannelGroupName": "TextView"
+    },
+    "item_live_setting.xml": {
+      "tvSettingItemName": "TextView"
+    },
+    "item_live_setting_group.xml": {
+      "tvSettingGroupName": "TextView"
+    },
+    "item_local_file.xml": {
+      "tvType": "TextView",
+      "tvName": "TextView",
+      "tvInfo": "TextView"
+    },
+    "item_play_parse.xml": {
+      "tvParse": "TextView"
+    },
+    "item_quick_search_lite.xml": {
+      "tvName": "TextView"
+    },
+    "item_search.xml": {
+      "ivThumb": "ImageView",
+      "tvSite": "TextView",
+      "tvNote": "TextView",
+      "tvName": "TextView"
+    },
+    "item_search_danmu_result.xml": {
+      "danmuItem": "LinearLayout",
+      "danmuName": "TextView"
+    },
+    "item_search_lite.xml": {
+      "tvName": "TextView"
+    },
+    "item_search_normal.xml": {
+      "ivThumb": "ImageView",
+      "tvSite": "TextView",
+      "tvNote": "TextView",
+      "tvName": "TextView"
+    },
+    "item_search_subtitle_result.xml": {
+      "subtitleName": "TextView",
+      "subtitleNameInfo": "TextView"
+    },
+    "item_search_word_hot.xml": {
+      "tvSearchWord": "TextView"
+    },
+    "item_search_word_split.xml": {
+      "tvSearchWord": "TextView"
+    },
+    "item_series.xml": {
+      "tvSeries": "TextView"
+    },
+    "item_series_flag.xml": {
+      "tvSeriesFlag": "TextView",
+      "tvSeriesFlagSelect": "View"
+    },
+    "item_series_group.xml": {
+      "tvSeriesGroup": "TextView"
+    },
+    "item_setting_menu.xml": {
+      "tvName": "TextView"
+    },
+    "item_user_hot_vod.xml": {
+      "mItemFrame": "FrameLayout",
+      "ivThumb": "ImageView",
+      "tvRate": "TextView",
+      "tvNote": "TextView",
+      "tvName": "TextView",
+      "delFrameLayout": "FrameLayout",
+      "imageView": "ImageView"
+    },
+    "item_view_load_more.xml": {
+      "load_more_loading_view": "LinearLayout",
+      "loading_progress": "ProgressBar",
+      "loading_text": "TextView",
+      "load_more_load_fail_view": "FrameLayout",
+      "tv_prommm": "TextView",
+      "load_more_load_end_view": "FrameLayout"
+    },
+    "layout_keyborad.xml": {
+      "mRecyclerView": "androidx.recyclerview.widget.RecyclerView"
+    },
+    "loadsir_empty_layout.xml": {},
+    "loadsir_loading_layout.xml": {},
+    "player_live_control_view.xml": {
+      "tv_pause_container": "FrameLayout",
+      "tv_pause_progress_text": "TextView",
+      "tv_slide_progress_text": "TextView"
+    },
+    "player_vod_control_view.xml": {
+      "rootView": "FrameLayout",
+      "tv_top_l_container": "LinearLayout",
+      "tv_info_name1": "TextView",
+      "tv_videosize": "TextView",
+      "tv_top_r_container": "LinearLayout",
+      "tv_screen_display": "LinearLayout",
+      "net_play_speed": "TextView",
+      "tv_seek_time": "TextView",
+      "tv_sys_time": "TextView",
+      "tv_play_load_net_speed_right_top": "TextView",
+      "subtitle_view": "com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView",
+      "exo_subtitle_view": "com.google.android.exoplayer2.ui.SubtitleView",
+      "lyric_view": "com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView",
+      "bottom_container": "LinearLayout",
+      "play_btn_group": "LinearLayout",
+      "play_label": "TextView",
+      "play_next": "TextView",
+      "play_pre": "TextView",
+      "play_retry": "TextView",
+      "play_refresh": "TextView",
+      "play_scale": "TextView",
+      "play_speed": "TextView",
+      "play_player": "TextView",
+      "play_ijk": "TextView",
+      "play_time_start_end_text": "TextView",
+      "play_time_start": "TextView",
+      "play_time_end": "TextView",
+      "play_time_reset": "TextView",
+      "play_cast": "TextView",
+      "zimu_select": "TextView",
+      "audio_track_select": "TextView",
+      "video_track_select": "TextView",
+      "danmu_setting": "TextView",
+      "danmu_search_ui": "TextView",
+      "landscape_portrait": "TextView",
+      "screen_display": "TextView",
+      "parse_root": "LinearLayout",
+      "mGridParseView": "com.owen.tvrecyclerview.widget.TvRecyclerView",
+      "curr_time": "TextView",
+      "seekBar": "SeekBar",
+      "total_time": "TextView",
+      "tv_pause_container": "FrameLayout",
+      "tv_info_name": "TextView",
+      "tv_pause_progress_text": "TextView",
+      "tv_slide_progress_text": "TextView",
+      "tv_progress_container": "LinearLayout",
+      "tv_progress_icon": "ImageView",
+      "tv_progress_text": "TextView",
+      "tv_play_load_net_speed": "TextView",
+      "tv_back": "ImageView",
+      "tv_lock": "ImageView",
+      "play_speed_3_container": "FrameLayout",
+      "tv_speed_3": "TextView"
+    }
+  }
+}

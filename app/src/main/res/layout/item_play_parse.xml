@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/tvParse" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/mobile_surface" android:ellipsize="end" android:focusable="true" android:gravity="center" android:padding="5dp" android:singleLine="true" android:textColor="@android:color/white" android:textSize="12sp" android:minHeight="48dp" android:focusableInTouchMode="false" />

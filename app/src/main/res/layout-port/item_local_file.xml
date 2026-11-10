@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginBottom="4dp" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="10dp" android:paddingRight="10dp" android:minHeight="48dp" android:focusableInTouchMode="false">
+    <TextView android:id="@+id/tvType" android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center_vertical" android:singleLine="true" android:textColor="@android:color/white" android:textSize="14sp" />
+    <TextView android:id="@+id/tvName" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:ellipsize="middle" android:gravity="center_vertical" android:singleLine="true" android:textColor="@android:color/white" android:textSize="15sp" />
+    <TextView android:id="@+id/tvInfo" android:layout_width="121dp" android:layout_height="match_parent" android:ellipsize="end" android:gravity="center_vertical|right" android:singleLine="true" android:textColor="@color/color_CCFFFFFF" android:textSize="12sp" />
+</LinearLayout>

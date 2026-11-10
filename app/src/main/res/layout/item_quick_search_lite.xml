@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/mobile_surface" android:focusable="true" android:minHeight="64dp" android:focusableInTouchMode="false" android:padding="12dp">
+    <TextView android:id="@+id/tvName" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="center_vertical" android:padding="0dp" android:singleLine="false" android:textColor="@color/dialog_text_primary" android:textSize="15sp" android:maxLines="3" />
+</FrameLayout>

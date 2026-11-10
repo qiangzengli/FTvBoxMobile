@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="match_parent">
+    <FrameLayout android:id="@+id/tv_pause_container" android:layout_width="match_parent" android:layout_height="match_parent" android:tag="vod_control_pause" android:visibility="gone" tools:visibility="visible">
+        <LinearLayout android:layout_width="110dp" android:layout_height="77dp" android:layout_gravity="center" android:background="@drawable/mobile_surface" android:focusable="false" android:gravity="center" android:orientation="vertical">
+            <ImageView android:layout_width="33dp" android:layout_height="33dp" android:layout_gravity="center" android:focusable="false" android:src="@drawable/exo_icon_play" />
+            <TextView android:id="@+id/tv_pause_progress_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_marginTop="10dp" android:focusable="false" android:tag="vod_control_pause_t" android:visibility="gone" android:textColor="@android:color/white" android:textSize="19sp" tools:text="100" />
+        </LinearLayout>
+    </FrameLayout>
+    <TextView android:id="@+id/tv_slide_progress_text" android:layout_width="110dp" android:layout_height="55dp" android:layout_gravity="center" android:background="@drawable/mobile_surface" android:focusable="false" android:gravity="center" android:tag="vod_control_slide_info" android:textAlignment="gravity" android:textColor="@android:color/white" android:textSize="19sp" android:visibility="gone" tools:text="100" />
+    <ProgressBar android:layout_width="28dp" android:layout_height="28dp" android:layout_gravity="center" android:indeterminateBehavior="repeat" android:indeterminateDrawable="@drawable/anim_loading" android:indeterminateOnly="true" android:tag="vod_control_loading" android:visibility="gone" />
+</FrameLayout>

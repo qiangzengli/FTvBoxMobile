@@ -1,0 +1,113 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
+}
+android {
+    namespace 'com.github.tvbox.osc'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.fbox.fbox'
+        minSdk 23
+        targetSdk 28
+        versionCode 5
+        versionName '2.1.2-mobile'
+        multiDexEnabled true
+        ndk { abiFilters 'arm64-v8a' }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ['room.schemaLocation': "$projectDir/schemas".toString()]
+            }
+        }
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    sourceSets.main.java.srcDirs += 'src/normal/java'
+    buildFeatures { compose true; buildConfig true }
+    buildTypes {
+        debug { minifyEnabled false }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    packaging {
+        resources.excludes += ['META-INF/DEPENDENCIES', 'META-INF/beans.xml']
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+}
+dependencies {
+    implementation platform('androidx.compose:compose-bom:2025.08.01')
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-extended'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.runtime:runtime-livedata'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation platform('androidx.compose:compose-bom:2025.08.01')
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+
+    api fileTree(dir: "libs", include: ["*.jar","*.aar"])
+
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.fourthline.cling:cling-core:2.1.2'
+    implementation 'org.fourthline.cling:cling-support:2.1.2'
+    compileOnly 'javax.enterprise:cdi-api:1.2'
+    compileOnly 'javax.inject:javax.inject:1'
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+    compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+    implementation 'com.google.zxing:core:3.3.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.media:media:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+//    implementation files('libs/thunder.jar')
+//    implementation files('libs/commons-lang3-3.12.0.jar')
+
+
+    implementation 'com.squareup.okhttp3:okhttp:3.12.11'
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'com.squareup.okio:okio:2.8.0'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.45-androidx'
+    implementation 'com.kingja.loadsir:loadsir:1.3.8'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'me.jessyan:autosize:1.2.1'
+    implementation('com.thoughtworks.xstream:xstream:1.4.15') {
+        exclude group: 'xmlpull', module: 'xmlpull'
+    }
+    implementation 'org.greenrobot:eventbus:3.2.0'
+    implementation 'com.orhanobut:hawk:2.0.1'
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+
+    implementation project(":player")
+    implementation project(":quickjs")
+
+
+    implementation 'com.lzy.net:okgo:3.0.4'
+    // implementation 'com.tencent.bugly:crashreport_upgrade:latest.release'
+    implementation 'com.owen:tv-recyclerview:3.0.0'
+
+    implementation 'com.github.getActivity:XXPermissions:13.6'
+    implementation 'org.jsoup:jsoup:1.14.1'
+    implementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'com.googlecode.juniversalchardet:juniversalchardet:1.0.3'
+    //支持http3
+    implementation ('com.google.net.cronet:cronet-okhttp:0.1.0')
+//    implementation 'com.google.android.gms:play-services-cronet:18.0.1'
+    implementation ('org.chromium.net:cronet-embedded:101.4951.41')
+    implementation 'org.brotli:dec:0.1.2'
+}

@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginRight="5dp" android:background="@drawable/mobile_surface" android:clickable="true" android:focusable="true" android:orientation="vertical" android:paddingLeft="12dp" android:paddingTop="2dp" android:paddingRight="12dp" android:paddingBottom="0dp" android:minHeight="48dp" android:focusableInTouchMode="false" android:gravity="center">
+    <TextView android:id="@+id/tvSeriesFlag" android:layout_width="wrap_content" android:layout_height="wrap_content" android:ellipsize="end" android:gravity="center" android:singleLine="true" android:text="11111111111" android:textColor="@android:color/white" android:textSize="14sp" />
+    <View android:id="@+id/tvSeriesFlagSelect" android:layout_width="match_parent" android:layout_height="2dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp" android:background="@drawable/shape_source_flag_line" />
+</LinearLayout>
