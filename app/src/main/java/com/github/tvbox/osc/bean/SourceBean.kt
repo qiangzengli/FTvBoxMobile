@@ -78,7 +78,8 @@ class SourceBean {
     fun getTimeout(): Int = timeout
     fun setTimeout(timeout: Int) { this.timeout = timeout }
 
-    fun getPlayTimeoutSeconds(): Int = if (timeout > 0) Math.max(5, Math.min(60, timeout)) else 15
+    val playTimeoutSeconds: Int
+        get() = if (timeout > 0) Math.max(5, Math.min(60, timeout)) else 15
 
     fun getClickSelector(): String = clickSelector
     fun setClickSelector(clickSelector: String?) { this.clickSelector = clickSelector ?: "" }

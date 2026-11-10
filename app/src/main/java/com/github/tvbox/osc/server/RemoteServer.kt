@@ -190,7 +190,7 @@ class RemoteServer(port: Int, private val mContext: Context) : NanoHTTPD(port) {
                 } else if (fileName.startsWith("/proxyM3u8")) {
                     return newFixedLengthResponse(Response.Status.OK, "application/vnd.apple.mpegurl", if (m3u8Content == null) "" else m3u8Content)
                 } else if (fileName.startsWith("/dash/")) {
-                    val dashData = App.getInstance().dashData
+                    val dashData = App.getInstance().dashData ?: ""
                     try {
                         val data = String(Base64.decode(dashData, Base64.DEFAULT or Base64.NO_WRAP), charset("UTF-8"))
                         return newFixedLengthResponse(

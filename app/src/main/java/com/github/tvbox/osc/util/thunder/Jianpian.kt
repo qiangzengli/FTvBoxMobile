@@ -22,9 +22,10 @@ object Jianpian {
                 if (replace.contains("xgplay://")) {
                     replace = split[0].replace("xgplay://", "ftp://")
                 }
-                if (!TextUtils.isEmpty(App.burl)) {
-                    p2p.P2Pdoxpause(App.burl.toByteArray(charset("GBK")))
-                    p2p.P2Pdoxdel(App.burl.toByteArray(charset("GBK")))
+                val currentBurl = App.burl
+                if (!currentBurl.isNullOrEmpty()) {
+                    p2p.P2Pdoxpause(currentBurl.toByteArray(charset("GBK")))
+                    p2p.P2Pdoxdel(currentBurl.toByteArray(charset("GBK")))
                 }
                 App.burl = replace
                 p2p.P2Pdoxstart(replace.toByteArray(charset("GBK")))
@@ -44,10 +45,11 @@ object Jianpian {
     @JvmStatic
     fun finish() {
         val p2p = App.getp2p()
-        if (!TextUtils.isEmpty(App.burl) && p2p != null) {
+        val currentBurl = App.burl
+        if (!currentBurl.isNullOrEmpty() && p2p != null) {
             try {
-                p2p.P2Pdoxpause(App.burl.toByteArray(charset("GBK")))
-                p2p.P2Pdoxdel(App.burl.toByteArray(charset("GBK")))
+                p2p.P2Pdoxpause(currentBurl.toByteArray(charset("GBK")))
+                p2p.P2Pdoxdel(currentBurl.toByteArray(charset("GBK")))
                 App.burl = ""
             } catch (e: UnsupportedEncodingException) {
                 e.printStackTrace()
