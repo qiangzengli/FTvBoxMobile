@@ -5,7 +5,8 @@ import com.orhanobut.hawk.Hawk
 
 object SubtitleHelper {
     @JvmStatic
-    fun getSubtitleTextAutoSize(activity: Activity): Int {
+    fun getSubtitleTextAutoSize(activity: Activity?): Int {
+        if (activity == null) return 16
         val screenSqrt = ScreenUtils.getSqrt(activity)
         var subtitleTextSize = 16
         if (screenSqrt > 7.0 && screenSqrt <= 13.0) {
@@ -19,7 +20,7 @@ object SubtitleHelper {
     }
 
     @JvmStatic
-    fun getTextSize(activity: Activity): Int {
+    fun getTextSize(activity: Activity?): Int {
         val autoSize = getSubtitleTextAutoSize(activity)
         return Hawk.get(HawkConfig.SUBTITLE_TEXT_SIZE, autoSize)
     }

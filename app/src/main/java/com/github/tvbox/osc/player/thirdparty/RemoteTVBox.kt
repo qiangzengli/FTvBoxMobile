@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class RemoteTVBox {
 
-    abstract inner class Callback {
+    abstract class Callback {
         abstract fun found(viewHost: String, end: Boolean)
         abstract fun fail(all: Boolean, end: Boolean)
     }
