@@ -27,7 +27,7 @@ class GridFilterDialog(context: Context) : BaseDialog(context) {
         filterRoot = findViewById(R.id.filterRoot)
     }
 
-    interface Callback {
+    fun interface Callback {
         fun change()
     }
 

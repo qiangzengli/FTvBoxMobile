@@ -24,7 +24,7 @@ class EpisodeDialog(
     listener: EpisodeSelectListener?
 ) : BaseDialog(context) {
 
-    interface EpisodeSelectListener {
+    fun interface EpisodeSelectListener {
         fun selectEpisode(position: Int)
     }
 
