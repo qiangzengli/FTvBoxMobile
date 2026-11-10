@@ -29,25 +29,29 @@ object MobileConfigAuth {
 
     @JvmStatic
     fun title(video: Movie.Video): String {
+        val safeName = video.name ?: ""
         val source: SourceBean? = ApiConfig.get().getSource(video.sourceKey)
-        if (!ConfigAuthProvider.isQrAction(source, video.action, video.name)) return video.name
-        if (video.name.endsWith("注册")) return video.name
-        return video.name.replace("扫码登录", "手机登录").replace("扫码", "手机授权").replace("二维码", "授权链接")
+        if (!ConfigAuthProvider.isQrAction(source, video.action, safeName)) return safeName
+        if (safeName.endsWith("注册")) return safeName
+        return safeName.replace("扫码登录", "手机登录").replace("扫码", "手机授权").replace("二维码", "授权链接")
     }
 
     @JvmStatic
     fun note(video: Movie.Video): String? {
+        val safeName = video.name ?: ""
         val source: SourceBean? = ApiConfig.get().getSource(video.sourceKey)
-        if (!ConfigAuthProvider.isQrAction(source, video.action, video.name)) return video.note
-        if (video.name.endsWith("注册")) return "点击打开注册页面"
-        return if (video.note == null) "App 授权 / 手机登录" else video.note.replace("未扫码", "未登录").replace("扫码", "授权")
+        if (!ConfigAuthProvider.isQrAction(source, video.action, safeName)) return video.note
+        if (safeName.endsWith("注册")) return "点击打开注册页面"
+        val currentNote = video.note
+        return currentNote?.replace("未扫码", "未登录")?.replace("扫码", "授权") ?: "App 授权 / 手机登录"
     }
 
     @JvmStatic
     fun handle(owner: Fragment, video: Movie.Video, refreshed: Runnable): Boolean {
+        val safeName = video.name ?: ""
         val source: SourceBean? = ApiConfig.get().getSource(video.sourceKey)
-        if (!ConfigAuthProvider.isQrAction(source, video.action, video.name)) return false
-        val provider = ConfigAuthProvider.fromTitle(video.name)
+        if (!ConfigAuthProvider.isQrAction(source, video.action, safeName)) return false
+        val provider = ConfigAuthProvider.fromTitle(safeName)
         val context = owner.requireContext()
         if (provider == null || !ConfigAuthProvider.supportsMobileApi(source)) {
             val dialog = BaseDialog(context)
@@ -58,7 +62,7 @@ object MobileConfigAuth {
             dialog.show()
             return true
         }
-        LoginSheet(owner, source!!, provider, video.name.endsWith("注册"), refreshed, PluginAuthClient(source)).show()
+        LoginSheet(owner, source!!, provider, safeName.endsWith("注册"), refreshed, PluginAuthClient(source)).show()
         return true
     }
 
