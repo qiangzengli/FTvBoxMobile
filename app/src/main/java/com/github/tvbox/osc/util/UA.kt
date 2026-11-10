@@ -1,16 +1,13 @@
-package com.github.tvbox.osc.util;
+package com.github.tvbox.osc.util
 
-import com.github.tvbox.osc.base.App;
+import com.github.tvbox.osc.base.App
+import java.io.DataInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.Random
 
-import java.io.DataInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Random;
-
-public class UA {
-
-    private static String[] uas = new String[]{
+object UA {
+    private val uas = arrayOf(
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4557.4 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -5416,31 +5413,32 @@ public class UA {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36 Edg/91.0.864.59",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    };
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    )
 
-    public static String randomOne() {
-        int num = uas.length;
-        int key = (int)(Math.random()*num);
-        return uas[key];
+    @JvmStatic
+    fun randomOne(): String {
+        val num = uas.size
+        val key = (Math.random() * num).toInt()
+        return uas[key]
     }
 
-    public static String random() {
+    @JvmStatic
+    fun random(): String {
         try {
-            InputStream fis = App.getInstance().getAssets().open("ua.db");
-            DataInputStream dis = new DataInputStream(fis);
-            int len = dis.readInt();
-            int random = new Random().nextInt(len);
-            dis.skipBytes(random * 4);
-            int offset = dis.readInt();
-            dis.skipBytes((len - 1 - random) * 4 + offset);
-            String s = dis.readUTF();
-            return s;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            val fis = App.getInstance().assets.open("ua.db")
+            val dis = DataInputStream(fis)
+            val len = dis.readInt()
+            val random = Random().nextInt(len)
+            dis.skipBytes(random * 4)
+            val offset = dis.readInt()
+            dis.skipBytes((len - 1 - random) * 4 + offset)
+            return dis.readUTF()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
-        return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36";
+        return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
     }
 }

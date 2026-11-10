@@ -26,7 +26,7 @@ object Connect {
 
     @JvmStatic
     fun to(url: String, req: Req): Call {
-        val c = OkGoHelper.getDefaultClient()
+        val c = OkGoHelper.getDefaultClient() ?: OkHttpClient()
         client = c
         return c.newCall(getRequest(url, req, Headers.of(req.getHeader())))
     }

@@ -1248,7 +1248,7 @@ class ApiConfig private constructor() {
             if (index != -1) {
                 val endIndex = lives.lastIndexOf("\"")
                 url = lives.substring(index, endIndex)
-                url = DefaultConfig.checkReplaceProxy(url)
+                url = DefaultConfig.checkReplaceProxy(url) ?: ""
                 val extUrl = Uri.parse(url).getQueryParameter("ext")
                 if (!extUrl.isNullOrEmpty()) {
                     var extUrlFix: String = if (extUrl.startsWith("http") || extUrl.startsWith("clan://")) {
