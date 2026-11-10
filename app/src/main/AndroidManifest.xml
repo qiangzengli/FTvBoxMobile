@@ -18,6 +18,14 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:name=".base.App"
         android:allowBackup="true"
@@ -43,6 +51,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.fbox.mobile.auth.ConfigWebLoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.LivePlayActivity"
             android:screenOrientation="sensorLandscape" />

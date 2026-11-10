@@ -778,7 +778,8 @@ public class NativeBehaviorTest {
             });
             screenshot("audit-search-inline-navigation");
             onView(withId(R.id.mobileSearchBack)).perform(click());
-            assertEquals(androidx.lifecycle.Lifecycle.State.DESTROYED, search.getState());
+            // Activity teardown completes asynchronously after the click/transition.
+            await(() -> search.getState() == androidx.lifecycle.Lifecycle.State.DESTROYED);
         }
     }
 

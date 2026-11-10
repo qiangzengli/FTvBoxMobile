@@ -48,6 +48,7 @@ import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
+import com.github.tvbox.osc.event.RefreshEvent;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONObject;
@@ -199,6 +200,8 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 Movie.Video vod = ((Movie.Video) adapter.getItem(position));
 
                 if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1 && homeSourceRec != null && vod.action != null) {
+                    if (com.fbox.mobile.auth.MobileConfigAuth.handle(UserFragment.this, vod, () ->
+                            EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_CONFIG_AUTH_CHANGED)))) return;
                     sourceViewModel.action(vod.sourceKey, vod.action);
                     return;
                 }

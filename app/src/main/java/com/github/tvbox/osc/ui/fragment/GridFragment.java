@@ -253,6 +253,7 @@ public class GridFragment extends BaseLazyFragment {
                 Movie.Video video = gridAdapter.getData().get(position);
                 if (video != null) {
                     if (video.action != null) {
+                        if (com.fbox.mobile.auth.MobileConfigAuth.handle(GridFragment.this, video, GridFragment.this::forceRefresh)) return;
                         sourceViewModel.action(video.sourceKey, video.action);
                         return;
                     }

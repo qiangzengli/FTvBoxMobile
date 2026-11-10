@@ -758,6 +758,13 @@ public class HomeActivity extends BaseActivity {
             }
         } else if (event.type == RefreshEvent.TYPE_HOME_SOURCE_CHANGE) {
             refreshHome(false);
+        } else if (event.type == RefreshEvent.TYPE_CONFIG_AUTH_CHANGED) {
+            refreshHomeSort();
+            for (BaseLazyFragment fragment : fragments) {
+                if (fragment instanceof GridFragment && ((GridFragment) fragment).isLoad()) {
+                    ((GridFragment) fragment).forceRefresh();
+                }
+            }
         }
     }
 

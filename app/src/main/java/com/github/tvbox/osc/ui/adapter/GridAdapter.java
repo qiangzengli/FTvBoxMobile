@@ -33,19 +33,21 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
 
     @Override
     protected void convert(BaseViewHolder helper, Movie.Video item) {
+        String displayName = com.fbox.mobile.auth.MobileConfigAuth.title(item);
+        String displayNote = com.fbox.mobile.auth.MobileConfigAuth.note(item);
         if (this.mShowList) {
-            helper.setText(R.id.tvNote, item.note);
-            helper.setText(R.id.tvName, item.name);
+            helper.setText(R.id.tvNote, displayNote);
+            helper.setText(R.id.tvName, displayName);
             ImageView ivThumb = helper.getView(R.id.ivThumb);
             String pic = item.pic == null ? "" : item.pic.trim();
             if (!TextUtils.isEmpty(pic)) {
                 if (ImgUtil.isBase64Image(pic)) {
                     ivThumb.setImageBitmap(ImgUtil.decodeBase64ToBitmap(pic));
                 } else {
-                    ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 10), AutoSizeUtils.mm2px(mContext, 240), AutoSizeUtils.mm2px(mContext, 336), item.name);
+                    ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 10), AutoSizeUtils.mm2px(mContext, 240), AutoSizeUtils.mm2px(mContext, 336), displayName);
                 }
             } else {
-                ivThumb.setImageDrawable(ImgUtil.createTextDrawable(item.name));
+                ivThumb.setImageDrawable(ImgUtil.createTextDrawable(displayName));
             }
             return;
         }
@@ -61,13 +63,13 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
         tvLang.setVisibility(View.GONE);
         TextView tvArea = helper.getView(R.id.tvArea);
         tvArea.setVisibility(View.GONE);
-        if (TextUtils.isEmpty(item.note)) {
+        if (TextUtils.isEmpty(displayNote)) {
             helper.setVisible(R.id.tvNote, false);
         } else {
             helper.setVisible(R.id.tvNote, true);
-            helper.setText(R.id.tvNote, item.note);
+            helper.setText(R.id.tvNote, displayNote);
         }
-        helper.setText(R.id.tvName, item.name);
+        helper.setText(R.id.tvName, displayName);
         helper.setText(R.id.tvActor, item.actor);
         ImageView ivThumb = helper.getView(R.id.ivThumb);
         int newWidth = ImgUtil.defaultWidth;
@@ -81,10 +83,10 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
             if (ImgUtil.isBase64Image(pic)) {
                 ivThumb.setImageBitmap(ImgUtil.decodeBase64ToBitmap(pic));
             } else {
-                ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 10), AutoSizeUtils.mm2px(mContext, newWidth), AutoSizeUtils.mm2px(mContext, newHeight), item.name);
+                ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 10), AutoSizeUtils.mm2px(mContext, newWidth), AutoSizeUtils.mm2px(mContext, newHeight), displayName);
             }
         } else {
-            ivThumb.setImageDrawable(ImgUtil.createTextDrawable(item.name));
+            ivThumb.setImageDrawable(ImgUtil.createTextDrawable(displayName));
         }
         applyStyleToImage(ivThumb);
     }

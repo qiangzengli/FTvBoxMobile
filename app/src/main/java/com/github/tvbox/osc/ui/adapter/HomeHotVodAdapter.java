@@ -45,6 +45,8 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
 
     @Override
     protected void convert(BaseViewHolder helper, Movie.Video item) {
+        String displayName = com.fbox.mobile.auth.MobileConfigAuth.title(item);
+        String displayNote = com.fbox.mobile.auth.MobileConfigAuth.note(item);
         FrameLayout tvDel = helper.getView(R.id.delFrameLayout);
         tvDel.setVisibility(HawkConfig.hotVodDelete ? View.VISIBLE : View.GONE);
 
@@ -56,13 +58,13 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
         tvRate.setText(tvRateValue);
 
         TextView tvNote = helper.getView(R.id.tvNote);
-        if (item.note == null || item.note.isEmpty()) {
+        if (displayNote == null || displayNote.isEmpty()) {
             tvNote.setVisibility(View.GONE);
         } else {
-            tvNote.setText(item.note);
+            tvNote.setText(displayNote);
             tvNote.setVisibility(View.VISIBLE);
         }
-        helper.setText(R.id.tvName, item.name);
+        helper.setText(R.id.tvName, displayName);
         ImageView ivThumb = helper.getView(R.id.ivThumb);
 
         int newWidth = ImgUtil.defaultWidth;
@@ -77,10 +79,10 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
             if (ImgUtil.isBase64Image(pic)) {
                 ivThumb.setImageBitmap(ImgUtil.decodeBase64ToBitmap(pic));
             } else {
-                ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 10), AutoSizeUtils.mm2px(mContext, newWidth), AutoSizeUtils.mm2px(mContext, newHeight), item.name);
+                ImgUtil.load(pic, ivThumb, AutoSizeUtils.mm2px(mContext, 10), AutoSizeUtils.mm2px(mContext, newWidth), AutoSizeUtils.mm2px(mContext, newHeight), displayName);
             }
         } else {
-            ivThumb.setImageDrawable(ImgUtil.createTextDrawable(item.name));
+            ivThumb.setImageDrawable(ImgUtil.createTextDrawable(displayName));
         }
         android.widget.LinearLayout root = (android.widget.LinearLayout) helper.itemView;
         ViewGroup container = (ViewGroup) ivThumb.getParent();
