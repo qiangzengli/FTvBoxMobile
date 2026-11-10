@@ -8,7 +8,7 @@ import com.github.tvbox.osc.R
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.owen.tvrecyclerview.widget.TvRecyclerView
 
-class SelectDialog<T> : BaseDialog {
+class SelectDialog<T : Any> : BaseDialog {
 
     @JvmOverloads
     constructor(context: Context, resId: Int = R.layout.dialog_select) : super(context) {
