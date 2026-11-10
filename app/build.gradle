@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.compose'
+    id 'kotlin-kapt'
 }
 
 def releaseSigningFile = rootProject.file('release-signing.properties')
@@ -64,6 +65,12 @@ android {
     }
     kotlinOptions { jvmTarget = '17' }
 }
+
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas".toString())
+    }
+}
 dependencies {
     implementation platform('androidx.compose:compose-bom:2025.08.01')
     implementation 'androidx.activity:activity-compose:1.10.1'
@@ -99,7 +106,7 @@ dependencies {
 
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.11'
-    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
     implementation 'androidx.room:room-runtime:2.6.1'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.squareup.okio:okio:2.8.0'
@@ -108,7 +115,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    kapt 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'me.jessyan:autosize:1.2.1'
     implementation('com.thoughtworks.xstream:xstream:1.4.15') {
         exclude group: 'xmlpull', module: 'xmlpull'
