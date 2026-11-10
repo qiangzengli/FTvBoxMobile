@@ -230,13 +230,14 @@ object PlayerHelper {
         headers: HashMap<String, String>?,
         progress: Long
     ): Boolean {
+        val targetUrl = url ?: return false
         var callResult = false
         when (playerType) {
-            10 -> callResult = MXPlayer.run(activity, url, title, subtitle, headers)
-            11 -> callResult = ReexPlayer.run(activity, url, title, subtitle, headers)
-            12 -> callResult = Kodi.run(activity, url, title, subtitle, headers)
-            13 -> callResult = RemoteTVBox.run(activity, url, title, subtitle, headers)
-            14 -> callResult = VlcPlayer.run(activity, url, title, subtitle, progress)
+            10 -> callResult = MXPlayer.run(activity, targetUrl, title, subtitle, headers)
+            11 -> callResult = ReexPlayer.run(activity, targetUrl, title, subtitle, headers)
+            12 -> callResult = Kodi.run(activity, targetUrl, title, subtitle, headers)
+            13 -> callResult = RemoteTVBox.run(activity, targetUrl, title, subtitle, headers)
+            14 -> callResult = VlcPlayer.run(activity, targetUrl, title, subtitle, progress)
         }
         return callResult
     }

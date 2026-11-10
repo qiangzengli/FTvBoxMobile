@@ -13,15 +13,15 @@ class Danmu {
         fun isCancelled(): Boolean
     }
 
-    private val data = ArrayList<Data>()
+    val data = ArrayList<Data>()
 
     fun getData(): List<Data> {
         return if (data.isEmpty()) Collections.emptyList() else data
     }
 
     class Data(
-        private val param: String?,
-        private val text: String?
+        @JvmField val param: String?,
+        @JvmField val text: String?
     ) {
         fun getParam(): String {
             return if (TextUtils.isEmpty(param)) "" else param!!
