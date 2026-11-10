@@ -1,60 +1,60 @@
-package xyz.doikki.videoplayer.controller;
+package xyz.doikki.videoplayer.controller
 
-public interface IVideoController {
+interface IVideoController {
 
     /**
      * 开始控制视图自动隐藏倒计时
      */
-    void startFadeOut();
+    fun startFadeOut()
 
     /**
      * 取消控制视图自动隐藏倒计时
      */
-    void stopFadeOut();
+    fun stopFadeOut()
 
     /**
      * 控制视图是否处于显示状态
      */
-    boolean isShowing();
+    fun isShowing(): Boolean
 
     /**
      * 设置锁定状态
      * @param locked 是否锁定
      */
-    void setLocked(boolean locked);
+    fun setLocked(locked: Boolean)
 
     /**
      * 是否处于锁定状态
      */
-    boolean isLocked();
+    fun isLocked(): Boolean
 
     /**
      * 开始刷新进度
      */
-    void startProgress();
+    fun startProgress()
 
     /**
      * 停止刷新进度
      */
-    void stopProgress();
+    fun stopProgress()
 
     /**
      * 显示控制视图
      */
-    void hide();
+    fun hide()
 
     /**
      * 隐藏控制视图
      */
-    void show();
+    fun show()
 
     /**
      * 是否需要适配刘海
      */
-    boolean hasCutout();
+    fun hasCutout(): Boolean
 
     /**
      * 获取刘海的高度
      */
-    int getCutoutHeight();
+    fun getCutoutHeight(): Int
 }
