@@ -175,6 +175,7 @@ class JarLoader {
             } else if (source.startsWith("clan://")) {
                 load(key, download(clanToAddress(source), file))
             }
+            Unit
         }
     }
 

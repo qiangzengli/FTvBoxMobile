@@ -1,12 +1,10 @@
-package com.github.tvbox.osc.cache;
+package com.github.tvbox.osc.cache
 
-import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
-import androidx.room.Query;
-
-import java.util.List;
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 
 /**
  * @author pj567
@@ -14,24 +12,24 @@ import java.util.List;
  * @description:
  */
 @Dao
-public interface VodRecordDao {
+interface VodRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    long insert(VodRecord record);
+    fun insert(record: VodRecord): Long
 
     @Query("select * from vodRecord order by updateTime desc, id desc limit :size")
-    List<VodRecord> getAll(int size);
+    fun getAll(size: Int): List<VodRecord>
 
     @Query("select * from vodRecord where `sourceKey`=:sourceKey and `vodId`=:vodId")
-    VodRecord getVodRecord(String sourceKey, String vodId);
+    fun getVodRecord(sourceKey: String?, vodId: String?): VodRecord?
 
     @Delete
-    int delete(VodRecord record);
+    fun delete(record: VodRecord): Int
 
     @Query("select count(*) from vodRecord")
-    int getCount();
+    fun getCount(): Int
 
     @Query("DELETE FROM vodRecord")
-    void deleteAll();
+    fun deleteAll()
 
     /**
      * 保留最新指定条数, 其他删除.
@@ -39,5 +37,5 @@ public interface VodRecordDao {
      * @return
      */
     @Query("DELETE FROM vodRecord where id NOT IN (SELECT id FROM vodRecord ORDER BY updateTime desc, id desc LIMIT :size)")
-    int reserver(int size);
+    fun reserver(size: Int): Int
 }

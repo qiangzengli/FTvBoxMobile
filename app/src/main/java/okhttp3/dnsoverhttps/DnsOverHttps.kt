@@ -128,7 +128,7 @@ class DnsOverHttps internal constructor(builder: Builder) : Dns {
         if (response == null) {
             response = client.newCall(request).execute()
         }
-        return response.body()!!.bytes()
+        return response!!.body()!!.bytes()
     }
 
     private fun executeRequests(
