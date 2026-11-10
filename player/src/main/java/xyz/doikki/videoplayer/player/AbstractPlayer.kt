@@ -143,12 +143,12 @@ abstract class AbstractPlayer {
     /**
      * 设置渲染视频的View,主要用于TextureView
      */
-    abstract fun setSurface(surface: Surface)
+    abstract fun setSurface(surface: Surface?)
 
     /**
      * 设置渲染视频的View,主要用于SurfaceView
      */
-    abstract fun setDisplay(holder: SurfaceHolder)
+    abstract fun setDisplay(holder: SurfaceHolder?)
 
     /**
      * 设置音量
