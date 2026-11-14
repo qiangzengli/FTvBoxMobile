@@ -1,5 +1,10 @@
 pluginManagement {
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
 rootProject.name = 'FBoxNative'
 include ':app', ':player', ':quickjs'

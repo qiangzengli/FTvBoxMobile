@@ -49,9 +49,7 @@ abstract class BaseLazyFragment : Fragment(), CustomAdapt {
         if (act != null) {
             AutoSize.autoConvertDensity(act, sizeInDp, isBaseOnWidth)
         }
-        if (rootView == null) {
-            rootView = inflater.inflate(getLayoutResID(), container, false)
-        }
+        rootView = inflater.inflate(getLayoutResID(), container, false)
         isViewCreated = true
         return rootView
     }
@@ -158,6 +156,10 @@ abstract class BaseLazyFragment : Fragment(), CustomAdapt {
     override fun onDestroyView() {
         super.onDestroyView()
         isViewCreated = false
+        currentVisibleState = false
+        mIsFirstVisible = true
+        mLoadService = null
+        rootView = null
     }
 
     @Suppress("UNCHECKED_CAST")

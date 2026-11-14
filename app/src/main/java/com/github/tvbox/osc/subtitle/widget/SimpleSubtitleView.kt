@@ -39,10 +39,12 @@ class SimpleSubtitleView @JvmOverloads constructor(
     @JvmField
     var hasInternal: Boolean = false
 
-    private val backGroundText: TextView = TextView(context, attrs, defStyleAttr)
+    // TextView can invoke overridden methods before this subclass is initialized.
+    private var backGroundText: TextView? = null
     private var lyricMode: Boolean = false
 
     init {
+        backGroundText = TextView(context, attrs, defStyleAttr)
         mSubtitleEngine = DefaultSubtitleEngine()
         mSubtitleEngine.setOnSubtitlePreparedListener(this)
         mSubtitleEngine.setOnSubtitleChangeListener(this)
@@ -168,48 +170,55 @@ class SimpleSubtitleView @JvmOverloads constructor(
     }
 
     override fun setLayoutParams(params: ViewGroup.LayoutParams?) {
-        backGroundText.layoutParams = params
+        backGroundText?.layoutParams = params
         super.setLayoutParams(params)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val tt = backGroundText.text
+        val background = backGroundText
+        if (background == null) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            return
+        }
+        val tt = background.text
         val currentText = if (lyricMode) text.toString() else text
         if (TextUtils.isEmpty(tt) || tt != currentText) {
-            backGroundText.text = currentText
+            background.text = currentText
             postInvalidate()
         }
-        backGroundText.measure(widthMeasureSpec, heightMeasureSpec)
+        background.measure(widthMeasureSpec, heightMeasureSpec)
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     override fun setTextSize(size: Float) {
         super.setTextSize(size)
-        backGroundText.setTextSize(size)
+        backGroundText?.setTextSize(size)
     }
 
     override fun onTextChanged(text: CharSequence?, start: Int, lengthBefore: Int, lengthAfter: Int) {
-        backGroundText.text = if (lyricMode && text != null) text.toString() else text
+        backGroundText?.text = if (lyricMode && text != null) text.toString() else text
         super.onTextChanged(text, start, lengthBefore, lengthAfter)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        backGroundText.layout(left, top, right, bottom)
+        backGroundText?.layout(left, top, right, bottom)
         super.onLayout(changed, left, top, right, bottom)
     }
 
     override fun onDraw(canvas: Canvas) {
-        drawBackGroundText()
-        backGroundText.draw(canvas)
+        backGroundText?.let { background ->
+            drawBackGroundText(background)
+            background.draw(canvas)
+        }
         super.onDraw(canvas)
     }
 
-    private fun drawBackGroundText() {
-        val tp = backGroundText.paint
+    private fun drawBackGroundText(background: TextView) {
+        val tp = background.paint
         tp.strokeWidth = 10f
         tp.style = Paint.Style.FILL_AND_STROKE
-        backGroundText.setTextColor(Color.BLACK)
-        backGroundText.gravity = gravity
+        background.setTextColor(Color.BLACK)
+        background.gravity = gravity
     }
 
     companion object {

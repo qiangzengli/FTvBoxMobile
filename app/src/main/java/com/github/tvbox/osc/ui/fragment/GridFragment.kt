@@ -383,7 +383,7 @@ class GridFragment : BaseLazyFragment() {
         if (sourceViewModel != null) return
         val vm = ViewModelProvider(this).get(SourceViewModel::class.java)
         sourceViewModel = vm
-        vm.listResult.observe(this, Observer { absXml ->
+        vm.listResult.observe(viewLifecycleOwner, Observer { absXml ->
             isRequesting = false
             val adapter = gridAdapter ?: return@Observer
             val movie = absXml?.movie
@@ -419,7 +419,7 @@ class GridFragment : BaseLazyFragment() {
                 adapter.setEnableLoadMore(false)
             }
         })
-        vm.actionResult.observe(this, Observer { jsonObject ->
+        vm.actionResult.observe(viewLifecycleOwner, Observer { jsonObject ->
             if (jsonObject == null) return@Observer
             val msg = jsonObject.optString("msg")
             if (msg.isNotEmpty()) {

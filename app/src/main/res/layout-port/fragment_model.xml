@@ -119,7 +119,7 @@
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="调试模式" android:textColor="#E6EAF2" android:textSize="14sp" android:maxLines="2" android:ellipsize="end" android:layout_weight="0" android:gravity="start" android:layout_marginStart="0dp" android:layout_marginLeft="0dp" android:layout_marginTop="2dp" />
                 <TextView android:id="@+id/tvDebugOpen" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="关" android:textColor="#A6B1C5" android:textSize="14sp" android:maxLines="2" android:ellipsize="end" android:layout_weight="0" android:gravity="start" android:layout_marginStart="0dp" android:layout_marginLeft="0dp" android:layout_marginTop="2dp" />
             </LinearLayout>
-            <LinearLayout android:id="@+id/llApiRightGroup" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <LinearLayout android:id="@+id/llApiRightGroup" android:layout_width="0dp" android:layout_height="0dp" android:orientation="horizontal" android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

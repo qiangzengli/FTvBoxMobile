@@ -137,7 +137,7 @@ open class PlayFragment : BaseLazyFragment() {
     private var mPlayLoading: ProgressBar? = null
     private var mController: VodController? = null
     private var sourceViewModel: SourceViewModel? = null
-    private var playResultObserver: Observer<JSONObject>? = null
+    private var playResultObserver: Observer<JSONObject?>? = null
     private var qualityResult: JSONObject? = null
     private var mHandler: Handler? = null
     private var exitingPreview = false
@@ -1146,7 +1146,7 @@ open class PlayFragment : BaseLazyFragment() {
 
     private fun initViewModel() {
         sourceViewModel = ViewModelProvider(this).get(SourceViewModel::class.java)
-        playResultObserver = Observer<JSONObject> { info ->
+        playResultObserver = Observer<JSONObject?> { info ->
             if (info == null) publishQuality(null)
             if (info != null) {
                 try {

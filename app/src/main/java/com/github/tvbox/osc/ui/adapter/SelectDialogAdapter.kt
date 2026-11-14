@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.tvbox.osc.R
 import java.util.ArrayList
 
+// Callers can pass value types; the fallback uses their normal equality semantics.
+@SuppressLint("DiffUtilEquals")
 class SelectDialogAdapter<T : Any>(
     private val dialogInterface: SelectDialogInterface<T>?,
     diffCallback: DiffUtil.ItemCallback<T>?

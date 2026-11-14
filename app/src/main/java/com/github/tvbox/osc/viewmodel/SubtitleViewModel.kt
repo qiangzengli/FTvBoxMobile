@@ -25,7 +25,7 @@ import java.util.regex.Pattern
 class SubtitleViewModel : ViewModel() {
 
     @JvmField
-    val searchResult: MutableLiveData<SubtitleData> = MutableLiveData()
+    val searchResult: MutableLiveData<SubtitleData?> = MutableLiveData()
 
     private var pagesTotal = -1
     private val regexShooterFileOnclick = Pattern.compile("onthefly\\(\"(\\d+)\",\"(\\d+)\",\"([\\s\\S]*)\"\\)")

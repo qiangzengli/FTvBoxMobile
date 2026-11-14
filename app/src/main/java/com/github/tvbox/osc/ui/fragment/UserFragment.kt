@@ -269,7 +269,7 @@ class UserFragment : BaseLazyFragment(), View.OnClickListener {
         tvHotList?.adapter = adapter
 
         initHomeHotVod(adapter)
-        sourceViewModel?.actionResult?.observe(this, Observer { jsonObject ->
+        sourceViewModel?.actionResult?.observe(viewLifecycleOwner, Observer { jsonObject ->
             if (jsonObject == null) return@Observer
             val msg = jsonObject.optString("msg")
             if (msg.isNotEmpty()) Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()

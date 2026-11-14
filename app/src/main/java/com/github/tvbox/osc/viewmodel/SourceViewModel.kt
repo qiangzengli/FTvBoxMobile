@@ -64,25 +64,25 @@ class SourceViewModel : ViewModel() {
     val sortResult: MutableLiveData<AbsSortXml> = MutableLiveData()
 
     @JvmField
-    val listResult: MutableLiveData<AbsXml> = MutableLiveData()
+    val listResult: MutableLiveData<AbsXml?> = MutableLiveData()
 
     @JvmField
-    val searchResult: MutableLiveData<AbsXml> = MutableLiveData()
+    val searchResult: MutableLiveData<AbsXml?> = MutableLiveData()
 
     @JvmField
-    val quickSearchResult: MutableLiveData<AbsXml> = MutableLiveData()
+    val quickSearchResult: MutableLiveData<AbsXml?> = MutableLiveData()
 
     @JvmField
-    val detailFallbackSearchResult: MutableLiveData<AbsXml> = MutableLiveData()
+    val detailFallbackSearchResult: MutableLiveData<AbsXml?> = MutableLiveData()
 
     @JvmField
-    val detailResult: MutableLiveData<AbsXml> = MutableLiveData()
+    val detailResult: MutableLiveData<AbsXml?> = MutableLiveData()
 
     @JvmField
-    val actionResult: MutableLiveData<JSONObject> = MutableLiveData()
+    val actionResult: MutableLiveData<JSONObject?> = MutableLiveData()
 
     @JvmField
-    val playResult: MutableLiveData<JSONObject> = MutableLiveData()
+    val playResult: MutableLiveData<JSONObject?> = MutableLiveData()
 
     @JvmField
     var gson: Gson = Gson()
@@ -771,7 +771,7 @@ class SourceViewModel : ViewModel() {
         getSearch(sourceKey, wd, searchToken, detailFallbackSearchResult, "detail_fallback_search")
     }
 
-    private fun getSearch(sourceKey: String, wd: String, searchToken: String, result: MutableLiveData<AbsXml>, requestTag: String) {
+    private fun getSearch(sourceKey: String, wd: String, searchToken: String, result: MutableLiveData<AbsXml?>, requestTag: String) {
         val sourceBean = ApiConfig.get().getSource(sourceKey)
         if (sourceBean == null) {
             postEmptySearchResult(result, sourceKey, searchToken)
@@ -1676,7 +1676,7 @@ class SourceViewModel : ViewModel() {
         }
     }
 
-    private fun xml(result: MutableLiveData<AbsXml>?, xml: String?, sourceKey: String, searchToken: String = ""): AbsXml? {
+    private fun xml(result: MutableLiveData<AbsXml?>?, xml: String?, sourceKey: String, searchToken: String = ""): AbsXml? {
         return try {
             val xstream = XStream(DomDriver())
             xstream.autodetectAnnotations(true)
@@ -1720,7 +1720,7 @@ class SourceViewModel : ViewModel() {
         }
     }
 
-    private fun json(result: MutableLiveData<AbsXml>?, json: String?, sourceKey: String, searchToken: String = ""): AbsXml? {
+    private fun json(result: MutableLiveData<AbsXml?>?, json: String?, sourceKey: String, searchToken: String = ""): AbsXml? {
         return try {
             val absJson: AbsJson = gson.fromJson(json, object : TypeToken<AbsJson>() {}.type)
             val data = absJson.toAbsXml()
@@ -1785,7 +1785,7 @@ class SourceViewModel : ViewModel() {
         return result
     }
 
-    private fun postEmptySearchResult(result: MutableLiveData<AbsXml>?, sourceKey: String, searchToken: String = "") {
+    private fun postEmptySearchResult(result: MutableLiveData<AbsXml?>?, sourceKey: String, searchToken: String = "") {
         val data = AbsXml()
         data.sourceKey = sourceKey
         data.searchToken = searchToken
@@ -1798,7 +1798,7 @@ class SourceViewModel : ViewModel() {
         }
     }
 
-    private fun postSearchResult(result: MutableLiveData<AbsXml>, data: AbsXml) {
+    private fun postSearchResult(result: MutableLiveData<AbsXml?>, data: AbsXml) {
         if (result == detailFallbackSearchResult) {
             mainHandler.post {
                 result.value = data
@@ -1900,10 +1900,8 @@ class SourceViewModel : ViewModel() {
     }
 
     private fun postSortResult(sourceKey: String, sortXml: AbsSortXml?) {
-        var res = sortXml
-        if (res == null) {
-            res = AbsSortXml()
-        }
-        sortResult.postValue(attachSortSource(sourceKey, res))
+        val res = sortXml ?: AbsSortXml()
+        res.sourceKey = sourceKey
+        sortResult.postValue(res)
     }
 }

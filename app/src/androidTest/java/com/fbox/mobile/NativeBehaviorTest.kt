@@ -114,6 +114,13 @@ import java.util.function.BooleanSupplier
 class NativeBehaviorTest {
     private var server: FixtureServer? = null
     private lateinit var context: Context
+    private var lastHomeStatus = ""
+    private val previousSettings = LinkedHashMap<String, Any>()
+    private var fixtureSettingsCaptured = false
+    private val fixtureSettings = arrayOf(
+        HawkConfig.LIVE_API_URL, HawkConfig.API_URL, HawkConfig.HOME_API,
+        HawkConfig.HOME_REC, HawkConfig.HOME_REC_STYLE, HawkConfig.DEFAULT_LOAD_LIVE
+    )
 
     @Before
     @Throws(Exception::class)
@@ -129,9 +136,14 @@ class NativeBehaviorTest {
         server?.start()
         SourceViewModel.clearRuntimeCache()
         val s = server!!
+        for (key in fixtureSettings) {
+            if (Hawk.contains(key)) Hawk.get<Any>(key)?.let { previousSettings[key] = it }
+        }
+        fixtureSettingsCaptured = true
         Hawk.put(HawkConfig.LIVE_API_URL, s.base() + "/config")
         Hawk.put(HawkConfig.API_URL, s.base() + "/config")
         Hawk.put(HawkConfig.HOME_API, "phone-fixture")
+        Hawk.put(HawkConfig.HOME_REC, 1)
         Hawk.put(HawkConfig.HOME_REC_STYLE, true)
         Hawk.put(HawkConfig.DEFAULT_LOAD_LIVE, false)
         val loaded = CountDownLatch(1)
@@ -155,6 +167,18 @@ class NativeBehaviorTest {
     @After
     fun closeServer() {
         server?.stop()
+        if (!fixtureSettingsCaptured) return
+        val staleFixture = previousSettings[HawkConfig.HOME_API] == "phone-fixture" &&
+            (previousSettings[HawkConfig.API_URL] as? String)?.startsWith("http://127.0.0.1:") == true
+        for (key in fixtureSettings) {
+            val value = previousSettings[key]
+            val staleSourceSetting = key == HawkConfig.API_URL || key == HawkConfig.LIVE_API_URL || key == HawkConfig.HOME_API
+            if (value == null || (staleFixture && staleSourceSetting)) {
+                Hawk.delete(key)
+            } else {
+                Hawk.put(key, value)
+            }
+        }
     }
 
     @Test
@@ -377,7 +401,9 @@ class NativeBehaviorTest {
                     search.onActivity { activity ->
                         activity.findViewById<NestedScrollView>(R.id.mobileSearchSuggestions).scrollTo(0, 0)
                     }
-                    onView(withId(R.id.tvHistoryClear)).perform(click())
+                    SystemClock.sleep(500) // Let the previous swipe finish before tapping the history button.
+                    onView(withId(R.id.tvHistoryClear)).perform(scrollTo(), click())
+                    assertEquals("Search history must clear", 0, Hawk.get(HawkConfig.SEARCH_HISTORY, ArrayList<String>()).size)
                     onView(withId(R.id.mobileSearchHistoryEmpty)).check(matches(isDisplayed()))
                     Hawk.put(HawkConfig.SEARCH_HISTORY, history)
                 }
@@ -418,8 +444,20 @@ class NativeBehaviorTest {
             await(BooleanSupplier { homeShows(home, "手机测试源", "手机播放测试") })
             for (mode in arrayOf("单列列表", "多列海报")) {
                 home.onActivity { activity -> activity.startActivity(Intent(activity, SettingActivity::class.java)) }
+                await(BooleanSupplier {
+                    val resumed = booleanArrayOf(false)
+                    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                        resumed[0] = ActivityLifecycleMonitorRegistry.getInstance()
+                            .getActivitiesInStage(Stage.RESUMED).any { it is SettingActivity && it.hasWindowFocus() }
+                    }
+                    resumed[0]
+                })
                 onView(withId(R.id.llHomeRecStyle)).perform(scrollTo(), click())
-                onView(withText(mode)).inRoot(isDialog()).perform(click())
+                try {
+                    onView(withText(mode)).inRoot(isDialog()).perform(click())
+                } catch (error: RuntimeException) {
+                    throw AssertionError("Home layout dialog did not show for $mode", error)
+                }
                 androidx.test.espresso.Espresso.pressBack()
                 val catalog = ArrayList<Movie.Video>()
                 for (i in 1..20) {
@@ -769,6 +807,9 @@ class NativeBehaviorTest {
         home.onActivity { activity ->
             val label = activity.findViewById<TextView>(R.id.tvName)
             val adapter = UserFragment.homeHotVodAdapter
+            lastHomeStatus = "home label=${label.text}, selected=${ApiConfig.get().getHomeSourceBean()?.name}, " +
+                "recommendation mode=${Hawk.get(HawkConfig.HOME_REC, -1)}, " +
+                "items=${adapter?.data?.size}, first=${adapter?.data?.firstOrNull()?.name}"
             matches[0] = source.contentEquals(label.text) && adapter != null && adapter.data.any { vod -> title == vod.name }
         }
         return matches[0]
@@ -1129,8 +1170,8 @@ class NativeBehaviorTest {
         val result = AtomicReference<JSONObject>()
         val latch = CountDownLatch(1)
         val model = SourceViewModel()
-        val observer = Observer<JSONObject> { value ->
-            result.set(value)
+        val observer = Observer<JSONObject?> { value ->
+            if (value != null) result.set(value)
             latch.countDown()
         }
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -1153,7 +1194,7 @@ class NativeBehaviorTest {
             if (condition.asBoolean) return
             SystemClock.sleep(100)
         }
-        fail("Native operation did not finish within 30 seconds")
+        fail("Native operation did not finish within 30 seconds. $lastHomeStatus")
     }
 
     @Throws(Exception::class)
@@ -1228,7 +1269,7 @@ class NativeBehaviorTest {
                 else -> newFixedLengthResponse(
                     Response.Status.OK,
                     "application/json",
-                    "{\"class\":[{\"type_id\":\"1\",\"type_name\":\"电影\"}],\"page\":1,\"pagecount\":1,\"list\":[{\"vod_id\":\"" + itemId() + "\",\"vod_name\":\"" + (if (session.uri == "/second") "第二线路内容" else "手机播放测试") + "\",\"vod_pic\":\"\",\"vod_play_from\":\"web\" + \"$$$\" + \"direct\",\"vod_play_url\":\"" + episodes(webpage) + "$$$" + episodes("$b/video.mp4") + "\"}]}"
+                    "{\"class\":[{\"type_id\":\"1\",\"type_name\":\"电影\"}],\"page\":1,\"pagecount\":1,\"list\":[{\"vod_id\":\"" + itemId() + "\",\"vod_name\":\"" + (if (session.uri == "/second") "第二线路内容" else "手机播放测试") + "\",\"vod_pic\":\"\",\"vod_play_from\":\"web\$\$\$direct\",\"vod_play_url\":\"" + episodes(webpage) + "$$$" + episodes("$b/video.mp4") + "\"}]}"
                 )
             }
         }

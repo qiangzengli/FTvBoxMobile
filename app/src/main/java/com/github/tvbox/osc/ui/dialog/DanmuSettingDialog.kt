@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.ui.dialog
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
@@ -145,6 +146,8 @@ class DanmuSettingDialog(context: Context) : BaseDialog(context) {
         view.text = "$value%"
     }
 
+    // The inputs are Boolean, Float, and Int values, all with value equality.
+    @SuppressLint("DiffUtilEquals")
     private fun <T : Any> setButtonAdapter(rid: Int, data: List<T>, select: Int, dialogInterface: ButtonAdapter.SelectDialogInterface<T>) {
         val adapter = ButtonAdapter(dialogInterface, object : DiffUtil.ItemCallback<T>() {
             override fun areItemsTheSame(oldItem: T, newItem: T): Boolean {

@@ -590,7 +590,7 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "MissingSuperCall")
     override fun onBackPressed() {
         if (homeSortLoading) {
             cancelHomeSortLoading()
